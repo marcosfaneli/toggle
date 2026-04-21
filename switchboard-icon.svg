@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <!-- Background -->
+  <rect width="120" height="120" rx="24" fill="#0f172a"/>
+
+  <!-- Toggle track OFF (left) -->
+  <rect x="14" y="28" width="44" height="22" rx="11" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <!-- Toggle knob OFF -->
+  <circle cx="27" cy="39" r="8" fill="#475569"/>
+
+  <!-- Toggle track ON (right) -->
+  <rect x="62" y="28" width="44" height="22" rx="11" fill="#6366f1"/>
+  <!-- Toggle knob ON -->
+  <circle cx="95" cy="39" r="8" fill="#ffffff"/>
+
+  <!-- Toggle track OFF (left, middle) -->
+  <rect x="14" y="60" width="44" height="22" rx="11" fill="#6366f1"/>
+  <!-- Toggle knob ON -->
+  <circle cx="47" cy="71" r="8" fill="#ffffff"/>
+
+  <!-- Toggle track OFF (right, middle) -->
+  <rect x="62" y="60" width="44" height="22" rx="11" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <!-- Toggle knob OFF -->
+  <circle cx="75" cy="71" r="8" fill="#475569"/>
+
+  <!-- Label -->
+  <text x="60" y="108" text-anchor="middle" font-family="'Inter', 'Helvetica Neue', sans-serif" font-size="10" font-weight="600" letter-spacing="2" fill="#6366f1">SWITCHBOARD</text>
+</svg>

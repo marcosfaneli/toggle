@@ -1,5 +1,7 @@
 # Switchboard
 
+![Switchboard](./switchboard-icon.svg)
+
 Feature Toggle Server — manage boolean feature flags across your microservices.
 
 ## Stack
