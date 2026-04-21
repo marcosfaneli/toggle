@@ -4,6 +4,8 @@ import com.github.f4b6a3.ulid.UlidCreator;
 import com.toggle.server.toggle.application.CreateToggleCommand;
 import com.toggle.server.toggle.domain.Toggle;
 import com.toggle.server.toggle.domain.ToggleAlreadyExistsException;
+import com.toggle.server.toggle.domain.ToggleValue;
+import com.toggle.server.toggle.domain.ValueType;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,15 @@ public class TogglePersistenceAdapter {
         entity.setVersion(1L);
         entity.setUpdatedAt(LocalDateTime.now());
 
+        if (command.value() != null) {
+            var valueEntity = new ToggleValueEntity();
+            valueEntity.setToggle(entity);
+            valueEntity.setValueType(command.value().type());
+            valueEntity.setValueRaw(command.value().raw());
+            valueEntity.setUpdatedAt(LocalDateTime.now());
+            entity.setValue(valueEntity);
+        }
+
         try {
             return toDomain(repository.save(entity));
         } catch (DataIntegrityViolationException exception) {
@@ -37,12 +48,19 @@ public class TogglePersistenceAdapter {
     }
 
     private Toggle toDomain(ToggleEntity entity) {
+        ToggleValue value = null;
+        if (entity.getValue() != null) {
+            value = new ToggleValue(
+                    ValueType.valueOf(entity.getValue().getValueType()),
+                    entity.getValue().getValueRaw());
+        }
         return new Toggle(
                 entity.getPublicId(),
                 entity.getName(),
                 entity.getOwnerServiceName(),
                 entity.isEnabled(),
                 entity.getVersion(),
-                entity.getUpdatedAt());
+                entity.getUpdatedAt(),
+                value);
     }
 }

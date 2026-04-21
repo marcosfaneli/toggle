@@ -8,5 +8,6 @@ public record Toggle(
         String ownerServiceName,
         boolean enabled,
         long version,
-        LocalDateTime updatedAt) {
+        LocalDateTime updatedAt,
+        ToggleValue value) {
 }

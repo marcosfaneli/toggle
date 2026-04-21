@@ -30,6 +30,9 @@ class ToggleEntity {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @OneToOne(mappedBy = "toggle", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private ToggleValueEntity value;
+
     Long getId() { return id; }
     void setId(Long id) { this.id = id; }
 
@@ -50,4 +53,7 @@ class ToggleEntity {
 
     LocalDateTime getUpdatedAt() { return updatedAt; }
     void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    ToggleValueEntity getValue() { return value; }
+    void setValue(ToggleValueEntity value) { this.value = value; }
 }

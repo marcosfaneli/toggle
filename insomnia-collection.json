@@ -22,7 +22,7 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"name\": \"minha-feature\",\n  \"ownerServiceName\": \"pedido-service\",\n  \"enabled\": true\n}"
+        "text": "{\n  \"name\": \"minha-feature\",\n  \"ownerServiceName\": \"pedido-service\",\n  \"enabled\": true,\n  \"value\": {\n    \"type\": \"STRING\",\n    \"raw\": \"variant-a\"\n  }\n}"
       }
     }
   ]

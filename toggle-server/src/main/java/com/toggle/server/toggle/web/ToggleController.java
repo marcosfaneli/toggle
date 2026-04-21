@@ -19,10 +19,18 @@ public class ToggleController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ToggleResponse create(@Valid @RequestBody CreateToggleRequest request) {
+        CreateToggleCommand.ToggleValueCommand valueCommand = null;
+        if (request.value() != null) {
+            valueCommand = new CreateToggleCommand.ToggleValueCommand(
+                    request.value().type(),
+                    request.value().raw());
+        }
+
         var command = new CreateToggleCommand(
                 request.name(),
                 request.ownerServiceName(),
-                request.enabled());
+                request.enabled(),
+                valueCommand);
 
         return ToggleResponse.from(createToggleUseCase.execute(command));
     }
