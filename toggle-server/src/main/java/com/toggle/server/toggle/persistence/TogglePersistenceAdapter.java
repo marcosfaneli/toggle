@@ -3,6 +3,8 @@ package com.toggle.server.toggle.persistence;
 import com.github.f4b6a3.ulid.UlidCreator;
 import com.toggle.server.toggle.application.CreateToggleCommand;
 import com.toggle.server.toggle.domain.Toggle;
+import com.toggle.server.toggle.domain.ToggleAlreadyExistsException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,10 +19,6 @@ public class TogglePersistenceAdapter {
         this.repository = repository;
     }
 
-    public boolean existsByNameAndOwner(String name, String ownerServiceName) {
-        return repository.existsByNameAndOwnerServiceName(name, ownerServiceName);
-    }
-
     @Transactional
     public Toggle save(CreateToggleCommand command) {
         var entity = new ToggleEntity();
@@ -31,7 +29,11 @@ public class TogglePersistenceAdapter {
         entity.setVersion(1L);
         entity.setUpdatedAt(LocalDateTime.now());
 
-        return toDomain(repository.save(entity));
+        try {
+            return toDomain(repository.save(entity));
+        } catch (DataIntegrityViolationException exception) {
+            throw new ToggleAlreadyExistsException(command.name(), command.ownerServiceName());
+        }
     }
 
     private Toggle toDomain(ToggleEntity entity) {

@@ -136,6 +136,29 @@ Padrao de IDs:
 
 ### 5.3 APIs do Servidor
 
+#### 5.3.0 Contrato de erro padrao
+
+- Todas as respostas de erro do servidor devem usar `application/problem+json` (ProblemDetail).
+- Estrutura minima obrigatoria em qualquer endpoint:
+  - `status`: codigo HTTP numerico.
+  - `title`: resumo estavel do tipo de erro.
+  - `detail`: descricao do problema.
+  - `instance`: URI da requisicao que falhou.
+- Para regras de unicidade, o padrao de implementacao recomendado e `insert` direto protegido por constraint `UNIQUE`, com mapeamento de violacao de integridade para erro de negocio (409).
+- Evitar padrao `check-then-insert` para reduzir janela de condicao de corrida em cenarios concorrentes.
+
+Exemplo de erro de negocio (409):
+
+```json
+{
+  "type": "about:blank",
+  "title": "Conflict",
+  "status": 409,
+  "detail": "Toggle 'novo-checkout' already exists for service 'checkout-service'",
+  "instance": "/toggles"
+}
+```
+
 #### 5.3.1 Cadastrar toggle
 
 - Metodo: POST

@@ -18,6 +18,9 @@ Regra principal:
 - Migrations versionadas por historia (ex: V001__, V002__, ...).
 - Sempre incluir rollback/logica reversivel quando a stack suportar.
 - Sempre incluir testes de contrato do endpoint da historia.
+- Erros HTTP devem seguir ProblemDetail (RFC 7807 / application/problem+json) em todas as APIs.
+- Todo erro deve incluir no minimo os campos padrao do Spring ProblemDetail: `status`, `title`, `detail` e `instance`.
+- Para regras de unicidade, preferir `insert` direto com `UNIQUE` no banco e mapear a violacao para erro de negocio (409), evitando pre-consulta (`check-then-insert`).
 
 ---
 

@@ -13,10 +13,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -39,9 +41,11 @@ class ToggleControllerTest {
 
         when(createToggleUseCase.execute(any(CreateToggleCommand.class))).thenReturn(toggle);
 
+        var body = Objects.requireNonNull(objectMapper.writeValueAsString(request));
+
         mockMvc.perform(post("/toggles")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
+                .content(body))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("novo-checkout"))
                 .andExpect(jsonPath("$.ownerServiceName").value("checkout-service"))
@@ -56,32 +60,45 @@ class ToggleControllerTest {
         when(createToggleUseCase.execute(any(CreateToggleCommand.class)))
                 .thenThrow(new ToggleAlreadyExistsException("novo-checkout", "checkout-service"));
 
+        var body = Objects.requireNonNull(objectMapper.writeValueAsString(request));
+
         mockMvc.perform(post("/toggles")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
+                .content(body))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.status").value(409));
+            .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
+            .andExpect(jsonPath("$.status").value(409))
+            .andExpect(jsonPath("$.detail").exists())
+            .andExpect(jsonPath("$.instance").exists());
     }
 
     @Test
     void shouldReturn400WhenNameIsBlank() throws Exception {
         var request = new CreateToggleRequest("", "checkout-service", true);
+        var body = Objects.requireNonNull(objectMapper.writeValueAsString(request));
 
         mockMvc.perform(post("/toggles")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
+                .content(body))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+            .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.detail").exists())
+            .andExpect(jsonPath("$.instance").exists());
     }
 
     @Test
     void shouldReturn400WhenOwnerServiceNameIsBlank() throws Exception {
         var request = new CreateToggleRequest("novo-checkout", "", true);
+        var body = Objects.requireNonNull(objectMapper.writeValueAsString(request));
 
         mockMvc.perform(post("/toggles")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
+                .content(body))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+            .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.detail").exists())
+            .andExpect(jsonPath("$.instance").exists());
     }
 }
