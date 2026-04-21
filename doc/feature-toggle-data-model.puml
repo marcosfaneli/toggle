@@ -1,0 +1,134 @@
+@startuml
+' Modelo de dados sugerido para Feature Toggle em Kubernetes
+
+hide methods
+skinparam classAttributeIconSize 0
+
+title Modelo de Dados - Feature Toggle Sync por Instancia
+
+enum ToggleStrategy {
+  LOCAL_CACHE
+  REMOTE_ALWAYS
+}
+
+enum ToggleValueType {
+  STRING
+  NUMBER
+}
+
+enum SyncStatus {
+  SYNCED
+  PENDING_RESPONSE
+  OUT_OF_SYNC
+  INACTIVE
+}
+
+class FeatureToggle {
+  +id: BIGINT <<PK>>
+  +publicId: UUIDv7/ULID <<UNIQUE>>
+  +name: String
+  +ownerServiceName: String
+  +enabled: Boolean
+  +version: Long
+  +updatedAt: Instant
+}
+
+class FeatureToggleValue {
+  +id: BIGINT <<PK>>
+  +publicId: UUIDv7/ULID <<UNIQUE>>
+  +toggleId: BIGINT <<FK, UNIQUE>>
+  +valueType: ToggleValueType
+  +valueRaw: String
+  +updatedAt: Instant
+}
+
+class ClientInstance {
+  +id: BIGINT <<PK>>
+  +publicId: UUIDv7/ULID <<UNIQUE>>
+  +serviceName: String
+  +instanceId: String <<UNIQUE(serviceName, instanceId)>>
+  +podName: String
+  +namespace: String
+  +callbackUrl: String
+  +status: String
+  +registeredAt: Instant
+  +lastHeartbeatAt: Instant
+  +lastSeenAt: Instant
+}
+
+class ClientToggleSubscription {
+  +id: BIGINT <<PK>>
+  +publicId: UUIDv7/ULID <<UNIQUE>>
+  +clientInstanceId: BIGINT <<FK>>
+  +toggleName: String
+  +consumeMode: ToggleStrategy <<DEFINED_BY_CLIENT>>
+  +createdAt: Instant
+}
+
+class ToggleSyncState {
+  +id: BIGINT <<PK>>
+  +publicId: UUIDv7/ULID <<UNIQUE>>
+  +toggleId: BIGINT <<FK>>
+  +clientInstanceId: BIGINT <<FK>>
+  +targetVersion: Long
+  +lastDeliveredVersion: Long
+  +uniqueKey: (toggleId, clientInstanceId) <<UNIQUE>>
+  +syncStatus: SyncStatus
+  +lastDeliveryAttemptAt: Instant
+  +lastResponseAt: Instant
+  +retryCount: Int
+  +lastError: String
+}
+
+class ToggleDeliveryEvent {
+  +id: BIGINT <<PK>>
+  +publicId: UUIDv7/ULID <<UNIQUE>>
+  +toggleId: BIGINT <<FK>>
+  +clientInstanceId: BIGINT <<FK>>
+  +httpMethod: String
+  +requestUrl: String
+  +requestBodyHash: String
+  +responseCode: Int
+  +responseBody: String
+  +attempt: Int
+  +createdAt: Instant
+}
+
+FeatureToggle "1" -- "0..*" ToggleSyncState : sync state
+FeatureToggle "1" -- "0..1" FeatureToggleValue : optional value
+ClientInstance "1" -- "0..*" ToggleSyncState : receives
+ClientInstance "1" -- "0..*" ClientToggleSubscription : subscribes
+FeatureToggle "1" -- "0..*" ClientToggleSubscription : consumed by
+ToggleSyncState "1" -- "0..*" ToggleDeliveryEvent : delivery history
+
+note bottom of ToggleSyncState
+Granularidade de controle: toggle + instancia (pod).
+Permite saber exatamente quais replicas estao sincronizadas.
+PK/FK numericas reduzem custo de join e tamanho de indice.
+end note
+
+note bottom of ClientInstance
+Um registro por pod ativo no Kubernetes.
+Remocao via deregister no shutdown ou expiracao por heartbeat.
+end note
+
+note bottom of ClientToggleSubscription
+MVP: estrategia definida pelo cliente e aplicada na lib local.
+Servidor nao faz governanca/validacao de estrategia neste momento.
+end note
+
+note bottom of FeatureToggle
+Valor e opcional para o MVP.
+Quando nao houver objeto filho de valor, a toggle funciona apenas como boolean.
+Quando houver, o tipo deve ser declarado (STRING ou NUMBER).
+end note
+
+note bottom of FeatureToggleValue
+Objeto filho opcional para evitar campos duplicados na entidade principal.
+valueRaw transporta o valor; valueType define como interpretar no cliente.
+end note
+
+note "Padrao recomendado para performance em RDBMS:\nPK interna BIGINT + identificador publico UUIDv7/ULID.\nEvita fragmentacao de indice tipica de UUID aleatorio como PK." as N1
+FeatureToggle .. N1
+
+@enduml

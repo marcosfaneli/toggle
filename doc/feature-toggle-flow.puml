@@ -1,0 +1,140 @@
+@startuml
+' Fluxo de cadastro e consumo de feature toggles
+
+title Fluxo de Feature Toggle (Kubernetes + Callback HTTP via PUT por Pod)
+
+actor "Time de Produto/Dev" as Product
+participant "Servico Servidor\n(Feature Toggle API)" as Server
+database "Banco de Toggles" as DB
+participant "Pod Cliente\n(Spring Service Instance)" as Consumer
+participant "Lib Feature Toggle\n(Spring Starter)" as Lib
+collections "Cache Local de Toggles" as Cache
+
+== Cadastro de feature toggle ==
+Product -> Server: Cadastrar toggle\n(nome, servico, enabled, value?, syncStatus)
+Server -> DB: Persistir toggle
+DB --> Server: OK
+Server --> Product: Confirmacao de cadastro
+
+note over Product,Server
+MVP: value e opcional como objeto filho.
+Quando informado: value.type = STRING|NUMBER e value.raw.
+end note
+
+note over Server,DB
+Cada toggle possui syncStatus por instancia registrada.
+Exemplos: SYNCED, PENDING_RESPONSE, OUT_OF_SYNC.
+end note
+
+== Declaracao no application (Spring) ==
+note over Consumer
+application.yml / application.properties
+declara toggles consumidas com estrategia por chave
+ex: feature.toggles.consumed.novo-checkout=LOCAL_CACHE
+ex: feature.toggles.consumed.pagamento-v2=REMOTE_ALWAYS
+define callback para atualizacao via PUT
+ex: feature.toggles.callback-url=/internal/feature-toggles
+end note
+
+note over Server,Lib
+MVP: o servidor nao decide nem valida estrategia por toggle.
+A estrategia e responsabilidade da lib/aplicacao cliente.
+end note
+
+note over Consumer,Lib
+Em Kubernetes, cada pod executa esse startup de forma independente
+e se registra como uma instancia distinta.
+end note
+
+== Registro no startup da aplicacao ==
+Consumer -> Lib: Inicializacao do contexto Spring
+Lib -> Lib: Ler toggles declaradas no application
+Lib -> Server: POST /clients/register\n(serviceName, instanceId, podName, namespace,\nlista de toggles consumidas, callbackUrl)
+Server -> DB: Validar e buscar valores atuais
+DB --> Server: Valores das toggles
+Server --> Lib: Resposta com mapa de toggles\n(enabled, value?)
+Lib -> Cache: Armazenar toggles em memoria
+Lib --> Consumer: Registro concluido
+
+note over Server,DB
+O servidor controla registro, versao e syncStatus por instanceId.
+Cada pod deve ter callbackUrl proprio; o endereco do Service nao garante
+entrega para todas as replicas.
+end note
+
+== Uso da toggle em tempo de execucao (estrategia por toggle) ==
+Consumer -> Lib: isEnabled("novo-checkout")
+Lib -> Lib: Aplicar estrategia local definida pelo cliente
+
+alt Estrategia = LOCAL_CACHE
+  Lib -> Cache: Consultar valor local
+  Cache --> Lib: true/false
+  Lib --> Consumer: true/false
+else Estrategia = REMOTE_ALWAYS
+  Lib -> Server: GET /toggles/novo-checkout?servico=consumer-service
+  Server -> DB: Buscar valor atual da toggle
+  DB --> Server: Valor atual
+  Server --> Lib: true/false
+  Lib --> Consumer: true/false
+end
+
+alt Toggle habilitada
+  Consumer -> Consumer: Executa fluxo novo
+else Toggle desabilitada
+  Consumer -> Consumer: Mantem fluxo atual
+end
+
+note over Consumer,Lib
+Objetivo: reduzir chamadas ao servidor a cada uso de toggle,
+fazendo bootstrap no startup e permitindo estrategia por toggle:
+LOCAL_CACHE ou REMOTE_ALWAYS.
+end note
+
+== Alteracao de toggle e propagacao para LOCAL_CACHE ==
+Product -> Server: Alterar valor da toggle (ex: novo-checkout=false)
+Server -> DB: Persistir novo valor da toggle
+DB --> Server: OK
+Server -> Server: Identificar pods registrados que consomem a toggle
+
+loop Para cada pod registrado consumidor da toggle
+  Server -> DB: Marcar syncStatus da instancia como PENDING_RESPONSE
+  Server -> Consumer: PUT {callbackUrl}/novo-checkout\n(enabled, value?, versao, updatedAt, instanceId)
+  Consumer -> Lib: Encaminhar atualizacao recebida
+  Lib -> Lib: Aplicar estrategia local (ex: atualizar cache se LOCAL_CACHE)
+  Consumer --> Server: HTTP 200 OK (resposta padrao do PUT)
+  Server -> DB: Atualizar syncStatus da instancia para SYNCED
+end
+
+alt Resposta HTTP nao recebida dentro do timeout
+  Server -> DB: Marcar syncStatus da instancia como OUT_OF_SYNC
+  Server -> Server: Agendar retry de entrega
+end
+
+note over Server,Consumer
+Neste modelo, o servidor realiza callback HTTP via PUT
+para o endpoint exposto pelo client.
+O HTTP 200 OK da chamada representa a confirmacao padrao da entrega.
+Com isso, pods em LOCAL_CACHE nao precisam consultar
+o servidor a cada isEnabled(), mas continuam atualizados.
+Cada replica e tratada individualmente.
+Novos pods recebem o snapshot atual no bootstrap.
+end note
+
+note over Consumer
+MVP: implementacao da estrategia e obrigatoria no cliente.
+O servidor apenas entrega valores e registra estado de entrega.
+end note
+
+== Ciclo de vida da instancia no cluster ==
+Consumer -> Lib: Shutdown do pod / encerramento da aplicacao
+Lib -> Server: DELETE /clients/register/{instanceId}
+Server -> DB: Remover registro da instancia
+DB --> Server: OK
+Server --> Lib: Confirmacao
+
+alt Pod encerra sem deregister
+  Server -> Server: Expirar registro por timeout/heartbeat
+  Server -> DB: Marcar instancia como inativa
+end
+
+@enduml
