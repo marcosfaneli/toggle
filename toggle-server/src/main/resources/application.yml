@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: toggle-server
+  datasource:
+    url: jdbc:mysql://localhost:3306/toggle_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: toggle
+    password: toggle
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080

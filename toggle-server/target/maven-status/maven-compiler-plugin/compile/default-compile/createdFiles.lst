@@ -1,0 +1,13 @@
+com/toggle/server/toggle/application/CreateToggleUseCase.class
+com/toggle/server/shared/web/GlobalExceptionHandler.class
+com/toggle/server/shared/web/ErrorResponse.class
+com/toggle/server/toggle/persistence/TogglePersistenceAdapter.class
+com/toggle/server/toggle/web/CreateToggleRequest.class
+com/toggle/server/toggle/domain/ToggleAlreadyExistsException.class
+com/toggle/server/toggle/web/ToggleResponse.class
+com/toggle/server/toggle/persistence/ToggleRepository.class
+com/toggle/server/toggle/application/CreateToggleCommand.class
+com/toggle/server/toggle/domain/Toggle.class
+com/toggle/server/ToggleServerApplication.class
+com/toggle/server/toggle/web/ToggleController.class
+com/toggle/server/toggle/persistence/ToggleEntity.class

@@ -1,0 +1,13 @@
+/home/marcosfaneli/projects/toggle/toggle-server/src/main/java/com/toggle/server/ToggleServerApplication.java
+/home/marcosfaneli/projects/toggle/toggle-server/src/main/java/com/toggle/server/shared/web/ErrorResponse.java
+/home/marcosfaneli/projects/toggle/toggle-server/src/main/java/com/toggle/server/shared/web/GlobalExceptionHandler.java
+/home/marcosfaneli/projects/toggle/toggle-server/src/main/java/com/toggle/server/toggle/application/CreateToggleCommand.java
+/home/marcosfaneli/projects/toggle/toggle-server/src/main/java/com/toggle/server/toggle/application/CreateToggleUseCase.java
+/home/marcosfaneli/projects/toggle/toggle-server/src/main/java/com/toggle/server/toggle/domain/Toggle.java
+/home/marcosfaneli/projects/toggle/toggle-server/src/main/java/com/toggle/server/toggle/domain/ToggleAlreadyExistsException.java
+/home/marcosfaneli/projects/toggle/toggle-server/src/main/java/com/toggle/server/toggle/persistence/ToggleEntity.java
+/home/marcosfaneli/projects/toggle/toggle-server/src/main/java/com/toggle/server/toggle/persistence/TogglePersistenceAdapter.java
+/home/marcosfaneli/projects/toggle/toggle-server/src/main/java/com/toggle/server/toggle/persistence/ToggleRepository.java
+/home/marcosfaneli/projects/toggle/toggle-server/src/main/java/com/toggle/server/toggle/web/CreateToggleRequest.java
+/home/marcosfaneli/projects/toggle/toggle-server/src/main/java/com/toggle/server/toggle/web/ToggleController.java
+/home/marcosfaneli/projects/toggle/toggle-server/src/main/java/com/toggle/server/toggle/web/ToggleResponse.java
