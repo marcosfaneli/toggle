@@ -1,0 +1,29 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-04-21T00:00:00.000Z",
+  "__export_source": "insomnia.desktop.app",
+  "resources": [
+    {
+      "_id": "wrk_toggle_server",
+      "_type": "workspace",
+      "name": "Toggle Server",
+      "scope": "collection"
+    },
+    {
+      "_id": "req_create_toggle",
+      "_type": "request",
+      "parentId": "wrk_toggle_server",
+      "name": "POST /toggles",
+      "method": "POST",
+      "url": "http://localhost:8080/toggles",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"minha-feature\",\n  \"ownerServiceName\": \"pedido-service\",\n  \"enabled\": true\n}"
+      }
+    }
+  ]
+}
