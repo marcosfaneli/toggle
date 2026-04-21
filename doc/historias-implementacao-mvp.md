@@ -26,7 +26,7 @@ Regra principal:
 
 ## 3. Backlog de Historias
 
-## H1 - Criar Feature Toggle (POST /toggles)
+## H1 - Criar Feature Toggle (POST /toggles) ✅ CONCLUÍDA
 
 Objetivo:
 
@@ -320,7 +320,7 @@ Criterios de aceite:
 
 ## 4. Ordem sugerida de entrega
 
-1. H1 - Criar toggle
+1. H1 - Criar toggle ✅
 2. H2 - Valor opcional
 3. H3 - Atualizar toggle
 4. H4 - Registro de instancia
