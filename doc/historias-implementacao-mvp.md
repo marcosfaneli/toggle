@@ -104,7 +104,43 @@ Fora de escopo nesta historia:
 
 ---
 
-## H3 - Atualizar toggle (PATCH /toggles/{name})
+## H3 - Listar toggles com paginacao (GET /toggles)
+
+Objetivo:
+
+- Permitir consulta de toggles por servico dono com retorno paginado.
+
+API:
+
+- `GET /toggles?ownerServiceName={ownerServiceName}&enabled={enabled}&page={page}&size={size}&sort={field,asc|desc}`
+
+Banco (somente necessario para H3):
+
+- Nenhuma tabela nova obrigatoria.
+- Apenas ajustes de indice se forem estritamente necessarios para performance de listagem por `owner_service_name` e ordenacao.
+
+Regras de negocio:
+
+- Retornar lista de toggles com `value` quando existir.
+- Se `enabled` for informado, filtrar por estado (`true|false`).
+- Retornar payload paginado com metadados de pagina (`content`, `page`, `size`).
+- `page` padrao = 0 e `size` padrao = 20 quando nao informado.
+
+Criterios de aceite:
+
+- GET retorna pagina de toggles com sucesso (200).
+- Resposta contem `content`, `page` e `size` consistentes com a consulta.
+- GET com `enabled=true` retorna apenas toggles habilitadas.
+- GET com `enabled=false` retorna apenas toggles desabilitadas.
+- Parametros invalidos de paginacao retornam erro de validacao (400).
+
+Fora de escopo nesta historia:
+
+- Filtro por texto livre.
+
+---
+
+## H4 - Atualizar toggle (PATCH /toggles/{name})
 
 Objetivo:
 
@@ -136,7 +172,7 @@ Fora de escopo nesta historia:
 
 ---
 
-## H4 - Registrar instancia cliente (POST /clients/register)
+## H5 - Registrar instancia cliente (POST /clients/register)
 
 Objetivo:
 
@@ -187,7 +223,7 @@ Fora de escopo nesta historia:
 
 ---
 
-## H5 - Heartbeat da instancia (POST /clients/heartbeat)
+## H6 - Heartbeat da instancia (POST /clients/heartbeat)
 
 Objetivo:
 
@@ -218,7 +254,7 @@ Fora de escopo nesta historia:
 
 ---
 
-## H6 - Entrega de atualizacao via PUT para clientes
+## H7 - Entrega de atualizacao via PUT para clientes
 
 Objetivo:
 
@@ -261,7 +297,7 @@ Fora de escopo nesta historia:
 
 ---
 
-## H7 - Historico de tentativas de entrega
+## H8 - Historico de tentativas de entrega
 
 Objetivo:
 
@@ -293,7 +329,7 @@ Criterios de aceite:
 
 ---
 
-## H8 - Runtime da lib-client (LOCAL_CACHE e REMOTE_ALWAYS)
+## H9 - Runtime da lib-client (LOCAL_CACHE e REMOTE_ALWAYS)
 
 Objetivo:
 
@@ -320,13 +356,14 @@ Criterios de aceite:
 ## 4. Ordem sugerida de entrega
 
 1. H1 - Criar toggle ✅
-2. H2 - Valor opcional
-3. H3 - Atualizar toggle
-4. H4 - Registro de instancia
-5. H5 - Heartbeat
-6. H6 - Entrega via PUT + sync state
-7. H7 - Historico de entrega
-8. H8 - Runtime da lib-client
+2. H2 - Valor opcional ✅
+3. H3 - Listar toggles com paginacao
+4. H4 - Atualizar toggle
+5. H5 - Registro de instancia
+6. H6 - Heartbeat
+7. H7 - Entrega via PUT + sync state
+8. H8 - Historico de entrega
+9. H9 - Runtime da lib-client
 
 ---
 
