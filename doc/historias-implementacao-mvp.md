@@ -66,7 +66,7 @@ Fora de escopo nesta historia:
 
 ---
 
-## H2 - Adicionar valor opcional da toggle (objeto filho)
+## H2 - Adicionar valor opcional da toggle (objeto filho) ✅ CONCLUÍDA
 
 Objetivo:
 
@@ -80,7 +80,6 @@ Banco (somente necessario para H2):
 
 - Criar tabela `feature_toggle_value` com:
   - `id` BIGINT PK
-  - `public_id` VARCHAR(36) UNIQUE
   - `toggle_id` BIGINT FK -> `feature_toggle.id`
   - `value_type` VARCHAR (STRING|NUMBER)
   - `value_raw` VARCHAR
