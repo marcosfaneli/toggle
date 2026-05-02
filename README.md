@@ -85,3 +85,5 @@ cd toggle-server
 ## Importing the API collection
 
 Import `insomnia-collection.json` into Insomnia to test the endpoints.
+
+.
