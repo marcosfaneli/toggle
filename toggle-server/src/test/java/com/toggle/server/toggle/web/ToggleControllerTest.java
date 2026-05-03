@@ -3,24 +3,36 @@ package com.toggle.server.toggle.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.toggle.server.toggle.application.CreateToggleCommand;
 import com.toggle.server.toggle.application.CreateToggleUseCase;
+import com.toggle.server.toggle.application.ListTogglesQuery;
+import com.toggle.server.toggle.application.ListTogglesUseCase;
 import com.toggle.server.toggle.domain.Toggle;
 import com.toggle.server.toggle.domain.ToggleAlreadyExistsException;
 import com.toggle.server.toggle.domain.ToggleValue;
 import com.toggle.server.toggle.domain.ValueType;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -35,6 +47,9 @@ class ToggleControllerTest {
 
     @MockitoBean
     private CreateToggleUseCase createToggleUseCase;
+
+    @MockitoBean
+    private ListTogglesUseCase listTogglesUseCase;
 
     @Test
     void shouldCreateToggleAndReturn201() throws Exception {
@@ -94,15 +109,12 @@ class ToggleControllerTest {
                 .andExpect(jsonPath("$.value.raw").value("42"));
     }
 
-    @Test
-    void shouldReturn400WhenValueTypeIsInvalid() throws Exception {
-        var body = """
-                {"name":"novo-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"BOOLEAN","raw":"true"}}
-                """;
-
+    @ParameterizedTest
+    @MethodSource("invalidValuePayloads")
+    void shouldReturn400WhenValuePayloadIsInvalid(String body) throws Exception {
         mockMvc.perform(post("/toggles")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
-                .content(body))
+                .content(Objects.requireNonNull(body)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
                 .andExpect(jsonPath("$.status").value(400))
@@ -110,36 +122,18 @@ class ToggleControllerTest {
                 .andExpect(jsonPath("$.instance").exists());
     }
 
-    @Test
-    void shouldReturn400WhenValueTypeIsBlank() throws Exception {
-        var body = """
-                {"name":"novo-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"","raw":"x"}}
-                """;
-
-        mockMvc.perform(post("/toggles")
-                .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
-                .content(body))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.detail").exists())
-                .andExpect(jsonPath("$.instance").exists());
-    }
-
-    @Test
-    void shouldReturn400WhenValueRawIsBlank() throws Exception {
-        var body = """
-                {"name":"novo-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"STRING","raw":""}}
-                """;
-
-        mockMvc.perform(post("/toggles")
-                .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
-                .content(body))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.detail").exists())
-                .andExpect(jsonPath("$.instance").exists());
+    private static Stream<String> invalidValuePayloads() {
+        return Stream.of(
+                """
+                        {"name":"novo-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"BOOLEAN","raw":"true"}}
+                        """,
+                """
+                        {"name":"novo-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"","raw":"x"}}
+                        """,
+                """
+                        {"name":"novo-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"STRING","raw":""}}
+                        """
+        );
     }
 
     @Test
@@ -190,4 +184,107 @@ class ToggleControllerTest {
                 .andExpect(jsonPath("$.detail").exists())
                 .andExpect(jsonPath("$.instance").exists());
     }
+
+    @Test
+    void shouldReturnPagedTogglesAndLinkHeader() throws Exception {
+        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", true, 1L, LocalDateTime.now(), null);
+        var pageable = PageRequest.of(0, 20);
+                var slice = newSlice(pageable, false, toggle);
+
+        when(listTogglesUseCase.execute(any(ListTogglesQuery.class), any(Pageable.class))).thenReturn(slice);
+
+        mockMvc.perform(get("/toggles")
+                .param("ownerServiceName", "checkout-service"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].name").value("novo-checkout"))
+                .andExpect(jsonPath("$.content[0].ownerServiceName").value("checkout-service"))
+                .andExpect(jsonPath("$.number").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.first").value(true))
+                .andExpect(jsonPath("$.last").value(true))
+                .andExpect(header().string("Link", Objects.requireNonNull(org.hamcrest.Matchers.containsString("rel=\"first\""))));
+    }
+
+    @Test
+    void shouldFilterByEnabledTrue() throws Exception {
+        var toggle = new Toggle("01ID", "enabled-toggle", "checkout-service", true, 1L, LocalDateTime.now(), null);
+        var pageable = PageRequest.of(0, 20);
+                var slice = newSlice(pageable, false, toggle);
+
+        when(listTogglesUseCase.execute(any(ListTogglesQuery.class), any(Pageable.class))).thenReturn(slice);
+
+        mockMvc.perform(get("/toggles")
+                .param("ownerServiceName", "checkout-service")
+                .param("enabled", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].enabled").value(true));
+    }
+
+    @Test
+    void shouldFilterByEnabledFalse() throws Exception {
+        var toggle = new Toggle("01ID", "disabled-toggle", "checkout-service", false, 1L, LocalDateTime.now(), null);
+        var pageable = PageRequest.of(0, 20);
+                var slice = newSlice(pageable, false, toggle);
+
+        when(listTogglesUseCase.execute(any(ListTogglesQuery.class), any(Pageable.class))).thenReturn(slice);
+
+        mockMvc.perform(get("/toggles")
+                .param("ownerServiceName", "checkout-service")
+                .param("enabled", "false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].enabled").value(false));
+    }
+
+    @Test
+    void shouldReturn400WhenEnabledParamIsInvalid() throws Exception {
+        mockMvc.perform(get("/toggles")
+                .param("ownerServiceName", "checkout-service")
+                .param("enabled", "maybe"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.detail").exists())
+                .andExpect(jsonPath("$.instance").exists());
+    }
+
+    @Test
+    void shouldReturn400WhenOwnerServiceNameIsMissing() throws Exception {
+        mockMvc.perform(get("/toggles"))
+                .andExpect(status().isBadRequest())
+                                .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.detail").exists())
+                .andExpect(jsonPath("$.instance").exists());
+    }
+
+        @Test
+        void shouldReturn400WhenPageSizeIsTooLarge() throws Exception {
+                mockMvc.perform(get("/toggles")
+                                .param("ownerServiceName", "checkout-service")
+                                .param("size", "101"))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
+                                .andExpect(jsonPath("$.status").value(400))
+                                .andExpect(jsonPath("$.detail").exists())
+                                .andExpect(jsonPath("$.instance").exists());
+        }
+
+    @Test
+    void shouldIncludeNextLinkWhenHasNextPage() throws Exception {
+        var toggle = new Toggle("01ID", "toggle-a", "checkout-service", true, 1L, LocalDateTime.now(), null);
+        var pageable = PageRequest.of(0, 20);
+                var slice = newSlice(pageable, true, toggle);
+
+        when(listTogglesUseCase.execute(any(ListTogglesQuery.class), any(Pageable.class))).thenReturn(slice);
+
+        mockMvc.perform(get("/toggles")
+                .param("ownerServiceName", "checkout-service"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Link", Objects.requireNonNull(org.hamcrest.Matchers.containsString("rel=\"next\""))));
+    }
+
+        @SuppressWarnings("null")
+        private static Slice<Toggle> newSlice(Pageable pageable, boolean hasNext, Toggle... toggles) {
+                return new SliceImpl<>(List.of(toggles), pageable, hasNext);
+        }
 }

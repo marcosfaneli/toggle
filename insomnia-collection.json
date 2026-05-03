@@ -24,6 +24,17 @@
         "mimeType": "application/json",
         "text": "{\n  \"name\": \"minha-feature\",\n  \"ownerServiceName\": \"pedido-service\",\n  \"enabled\": true,\n  \"value\": {\n    \"type\": \"STRING\",\n    \"raw\": \"variant-a\"\n  }\n}"
       }
+    },
+    {
+      "_id": "req_list_toggles",
+      "_type": "request",
+      "parentId": "wrk_toggle_server",
+      "name": "GET /toggles",
+      "method": "GET",
+      "url": "http://localhost:8080/toggles?ownerServiceName=pedido-service&page=0&size=20",
+      "headers": [
+        { "name": "Accept", "value": "application/json" }
+      ]
     }
   ]
 }

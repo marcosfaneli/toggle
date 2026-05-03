@@ -7,6 +7,8 @@ import com.toggle.server.toggle.domain.ToggleAlreadyExistsException;
 import com.toggle.server.toggle.domain.ToggleValue;
 import com.toggle.server.toggle.domain.ValueType;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,14 @@ public class TogglePersistenceAdapter {
 
     public TogglePersistenceAdapter(ToggleRepository repository) {
         this.repository = repository;
+    }
+
+    @Transactional(readOnly = true)
+    public Slice<Toggle> findAll(String ownerServiceName, Boolean enabled, Pageable pageable) {
+        Slice<ToggleEntity> slice = enabled != null
+                ? repository.findByOwnerServiceNameAndEnabled(ownerServiceName, enabled, pageable)
+                : repository.findByOwnerServiceName(ownerServiceName, pageable);
+        return slice.map(this::toDomain);
     }
 
     @Transactional

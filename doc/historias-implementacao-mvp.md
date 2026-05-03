@@ -104,7 +104,7 @@ Fora de escopo nesta historia:
 
 ---
 
-## H3 - Listar toggles com paginacao (GET /toggles)
+## H3 - Listar toggles com paginacao (GET /toggles) ✅ CONCLUÍDA
 
 Objetivo:
 
@@ -123,13 +123,14 @@ Regras de negocio:
 
 - Retornar lista de toggles com `value` quando existir.
 - Se `enabled` for informado, filtrar por estado (`true|false`).
-- Retornar payload paginado com metadados de pagina (`content`, `page`, `size`).
+- Retornar payload paginado com metadados de pagina (`content`, `number`, `size`, `first`, `last`) sem campos de total.
 - `page` padrao = 0 e `size` padrao = 20 quando nao informado.
+- Header `Link` RFC 8288 com navegacao (`rel="first"`, `rel="prev"`, `rel="next"` quando aplicavel).
 
 Criterios de aceite:
 
 - GET retorna pagina de toggles com sucesso (200).
-- Resposta contem `content`, `page` e `size` consistentes com a consulta.
+- Resposta contem `content`, `number` e `size` consistentes com a consulta.
 - GET com `enabled=true` retorna apenas toggles habilitadas.
 - GET com `enabled=false` retorna apenas toggles desabilitadas.
 - Parametros invalidos de paginacao retornam erro de validacao (400).
@@ -357,7 +358,7 @@ Criterios de aceite:
 
 1. H1 - Criar toggle ✅
 2. H2 - Valor opcional ✅
-3. H3 - Listar toggles com paginacao
+3. H3 - Listar toggles com paginacao ✅
 4. H4 - Atualizar toggle
 5. H5 - Registro de instancia
 6. H6 - Heartbeat
