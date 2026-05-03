@@ -4,6 +4,8 @@ import com.toggle.server.toggle.application.CreateToggleCommand;
 import com.toggle.server.toggle.application.CreateToggleUseCase;
 import com.toggle.server.toggle.application.ListTogglesQuery;
 import com.toggle.server.toggle.application.ListTogglesUseCase;
+import com.toggle.server.toggle.application.UpdateToggleCommand;
+import com.toggle.server.toggle.application.UpdateToggleUseCase;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +19,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 
+import java.util.ArrayList;
+
 @RestController
 @RequestMapping("/toggles")
 public class ToggleController {
@@ -25,10 +29,12 @@ public class ToggleController {
 
     private final CreateToggleUseCase createToggleUseCase;
     private final ListTogglesUseCase listTogglesUseCase;
+    private final UpdateToggleUseCase updateToggleUseCase;
 
-    public ToggleController(CreateToggleUseCase createToggleUseCase, ListTogglesUseCase listTogglesUseCase) {
+    public ToggleController(CreateToggleUseCase createToggleUseCase, ListTogglesUseCase listTogglesUseCase, UpdateToggleUseCase updateToggleUseCase) {
         this.createToggleUseCase = createToggleUseCase;
         this.listTogglesUseCase = listTogglesUseCase;
+        this.updateToggleUseCase = updateToggleUseCase;
     }
 
     @PostMapping
@@ -92,5 +98,26 @@ public class ToggleController {
 
     private String buildLink(String uri, String rel) {
         return "<%s>; rel=\"%s\"".formatted(uri, rel);
+    }
+
+    @PatchMapping("/{name}")
+    public ResponseEntity<ToggleResponse> update(
+            @PathVariable String name,
+            @RequestParam String ownerServiceName,
+            @Valid @RequestBody UpdateToggleRequest request) {
+
+        UpdateToggleCommand.ValueUpdate valueUpdate;
+        if (!request.isValueExplicitlySet()) {
+            valueUpdate = new UpdateToggleCommand.ValueUpdate.Keep();
+        } else if (request.getValue() == null) {
+            valueUpdate = new UpdateToggleCommand.ValueUpdate.Remove();
+        } else {
+            valueUpdate = new UpdateToggleCommand.ValueUpdate.Set(
+                    request.getValue().type(),
+                    request.getValue().raw());
+        }
+
+        var command = new UpdateToggleCommand(name, ownerServiceName, request.getEnabled(), valueUpdate);
+        return ResponseEntity.ok(ToggleResponse.from(updateToggleUseCase.execute(command)));
     }
 }

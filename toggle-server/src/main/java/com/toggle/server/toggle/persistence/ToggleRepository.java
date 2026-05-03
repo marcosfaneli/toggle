@@ -5,6 +5,8 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 interface ToggleRepository extends JpaRepository<ToggleEntity, Long> {
 
     @EntityGraph(attributePaths = "value")
@@ -12,4 +14,7 @@ interface ToggleRepository extends JpaRepository<ToggleEntity, Long> {
 
     @EntityGraph(attributePaths = "value")
     Slice<ToggleEntity> findByOwnerServiceNameAndEnabled(String ownerServiceName, boolean enabled, Pageable pageable);
+
+    @EntityGraph(attributePaths = "value")
+    Optional<ToggleEntity> findByNameAndOwnerServiceName(String name, String ownerServiceName);
 }

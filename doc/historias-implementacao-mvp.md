@@ -141,7 +141,7 @@ Fora de escopo nesta historia:
 
 ---
 
-## H4 - Atualizar toggle (PATCH /toggles/{name})
+## H4 - Atualizar toggle (PATCH /toggles/{name}) ✅ CONCLUÍDA
 
 Objetivo:
 

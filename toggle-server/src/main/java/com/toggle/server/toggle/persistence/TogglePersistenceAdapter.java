@@ -2,8 +2,10 @@ package com.toggle.server.toggle.persistence;
 
 import com.github.f4b6a3.ulid.UlidCreator;
 import com.toggle.server.toggle.application.CreateToggleCommand;
+import com.toggle.server.toggle.application.UpdateToggleCommand;
 import com.toggle.server.toggle.domain.Toggle;
 import com.toggle.server.toggle.domain.ToggleAlreadyExistsException;
+import com.toggle.server.toggle.domain.ToggleNotFoundException;
 import com.toggle.server.toggle.domain.ToggleValue;
 import com.toggle.server.toggle.domain.ValueType;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -55,6 +57,40 @@ public class TogglePersistenceAdapter {
         } catch (DataIntegrityViolationException exception) {
             throw new ToggleAlreadyExistsException(command.name(), command.ownerServiceName());
         }
+    }
+
+    @Transactional
+    public Toggle update(UpdateToggleCommand command) {
+        var entity = repository.findByNameAndOwnerServiceName(command.name(), command.ownerServiceName())
+                .orElseThrow(() -> new ToggleNotFoundException(command.name(), command.ownerServiceName()));
+
+        if (command.enabled() != null) {
+            entity.setEnabled(command.enabled());
+        }
+
+        switch (command.valueUpdate()) {
+            case UpdateToggleCommand.ValueUpdate.Keep ignored -> {}
+            case UpdateToggleCommand.ValueUpdate.Remove ignored -> entity.setValue(null);
+            case UpdateToggleCommand.ValueUpdate.Set set -> {
+                if (entity.getValue() != null) {
+                    entity.getValue().setValueType(set.type());
+                    entity.getValue().setValueRaw(set.raw());
+                    entity.getValue().setUpdatedAt(LocalDateTime.now());
+                } else {
+                    var valueEntity = new ToggleValueEntity();
+                    valueEntity.setToggle(entity);
+                    valueEntity.setValueType(set.type());
+                    valueEntity.setValueRaw(set.raw());
+                    valueEntity.setUpdatedAt(LocalDateTime.now());
+                    entity.setValue(valueEntity);
+                }
+            }
+        }
+
+        entity.setVersion(entity.getVersion() + 1);
+        entity.setUpdatedAt(LocalDateTime.now());
+
+        return toDomain(repository.save(entity));
     }
 
     private Toggle toDomain(ToggleEntity entity) {

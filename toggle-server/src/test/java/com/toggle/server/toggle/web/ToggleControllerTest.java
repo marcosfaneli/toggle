@@ -5,8 +5,11 @@ import com.toggle.server.toggle.application.CreateToggleCommand;
 import com.toggle.server.toggle.application.CreateToggleUseCase;
 import com.toggle.server.toggle.application.ListTogglesQuery;
 import com.toggle.server.toggle.application.ListTogglesUseCase;
+import com.toggle.server.toggle.application.UpdateToggleCommand;
+import com.toggle.server.toggle.application.UpdateToggleUseCase;
 import com.toggle.server.toggle.domain.Toggle;
 import com.toggle.server.toggle.domain.ToggleAlreadyExistsException;
+import com.toggle.server.toggle.domain.ToggleNotFoundException;
 import com.toggle.server.toggle.domain.ToggleValue;
 import com.toggle.server.toggle.domain.ValueType;
 import org.junit.jupiter.api.Test;
@@ -30,6 +33,7 @@ import java.util.stream.Stream;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -50,6 +54,9 @@ class ToggleControllerTest {
 
     @MockitoBean
     private ListTogglesUseCase listTogglesUseCase;
+
+    @MockitoBean
+    private UpdateToggleUseCase updateToggleUseCase;
 
     @Test
     void shouldCreateToggleAndReturn201() throws Exception {
@@ -287,4 +294,92 @@ class ToggleControllerTest {
         private static Slice<Toggle> newSlice(Pageable pageable, boolean hasNext, Toggle... toggles) {
                 return new SliceImpl<>(List.of(toggles), pageable, hasNext);
         }
+
+    // --- H4 PATCH /toggles/{name} ---
+
+    @Test
+    void shouldUpdateEnabledAndReturn200() throws Exception {
+        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", false, 2L, LocalDateTime.now(), null);
+        when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
+
+        mockMvc.perform(patch("/toggles/novo-checkout")
+                .param("ownerServiceName", "checkout-service")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"enabled\":false}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.enabled").value(false))
+                .andExpect(jsonPath("$.version").value(2));
+    }
+
+    @Test
+    void shouldUpdateValueAndReturn200() throws Exception {
+        var toggleValue = new ToggleValue(ValueType.NUMBER, "99");
+        var toggle = new Toggle("01ID", "limite", "api-gateway", true, 2L, LocalDateTime.now(), toggleValue);
+        when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
+
+        mockMvc.perform(patch("/toggles/limite")
+                .param("ownerServiceName", "api-gateway")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"value\":{\"type\":\"NUMBER\",\"raw\":\"99\"}}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.value.type").value("NUMBER"))
+                .andExpect(jsonPath("$.value.raw").value("99"));
+    }
+
+    @Test
+    void shouldRemoveValueAndReturn200() throws Exception {
+        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", true, 2L, LocalDateTime.now(), null);
+        when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
+
+        mockMvc.perform(patch("/toggles/novo-checkout")
+                .param("ownerServiceName", "checkout-service")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"value\":null}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.value").doesNotExist());
+    }
+
+    @Test
+    void shouldKeepValueWhenValueFieldAbsentAndReturn200() throws Exception {
+        var toggleValue = new ToggleValue(ValueType.STRING, "enabled");
+        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", false, 2L, LocalDateTime.now(), toggleValue);
+        when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
+
+        mockMvc.perform(patch("/toggles/novo-checkout")
+                .param("ownerServiceName", "checkout-service")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"enabled\":false}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.value.type").value("STRING"))
+                .andExpect(jsonPath("$.value.raw").value("enabled"));
+    }
+
+    @Test
+    void shouldReturn404WhenToggleNotFound() throws Exception {
+        when(updateToggleUseCase.execute(any(UpdateToggleCommand.class)))
+                .thenThrow(new ToggleNotFoundException("inexistente", "checkout-service"));
+
+        mockMvc.perform(patch("/toggles/inexistente")
+                .param("ownerServiceName", "checkout-service")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"enabled\":true}"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.detail").exists())
+                .andExpect(jsonPath("$.instance").exists());
+    }
+
+    @Test
+    void shouldReturn400WhenPatchValueTypeIsInvalid() throws Exception {
+        mockMvc.perform(patch("/toggles/novo-checkout")
+                .param("ownerServiceName", "checkout-service")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"value\":{\"type\":\"BOOLEAN\",\"raw\":\"true\"}}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.detail").exists())
+                .andExpect(jsonPath("$.instance").exists());
+    }
 }

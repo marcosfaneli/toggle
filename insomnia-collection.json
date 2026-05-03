@@ -35,6 +35,21 @@
       "headers": [
         { "name": "Accept", "value": "application/json" }
       ]
+    },
+    {
+      "_id": "req_update_toggle",
+      "_type": "request",
+      "parentId": "wrk_toggle_server",
+      "name": "PATCH /toggles/{name}",
+      "method": "PATCH",
+      "url": "http://localhost:8080/toggles/minha-feature?ownerServiceName=pedido-service",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"enabled\": false,\n  \"value\": {\n    \"type\": \"NUMBER\",\n    \"raw\": \"42\"\n  }\n}"
+      }
     }
   ]
 }
