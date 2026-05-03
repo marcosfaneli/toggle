@@ -2,7 +2,7 @@ package com.toggle.server.client.persistence;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "client_toggle_subscription")
@@ -25,7 +25,7 @@ class ClientSubscriptionEntity {
     private String consumeMode;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     Long getId() { return id; }
     void setId(Long id) { this.id = id; }
@@ -42,6 +42,6 @@ class ClientSubscriptionEntity {
     String getConsumeMode() { return consumeMode; }
     void setConsumeMode(String consumeMode) { this.consumeMode = consumeMode; }
 
-    LocalDateTime getCreatedAt() { return createdAt; }
-    void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    Instant getCreatedAt() { return createdAt; }
+    void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 }

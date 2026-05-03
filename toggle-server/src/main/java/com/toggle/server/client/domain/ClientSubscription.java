@@ -1,11 +1,11 @@
 package com.toggle.server.client.domain;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record ClientSubscription(
         String publicId,
         Long clientInstanceId,
         String toggleName,
         ConsumeMode consumeMode,
-        LocalDateTime createdAt) {
+        Instant createdAt) {
 }

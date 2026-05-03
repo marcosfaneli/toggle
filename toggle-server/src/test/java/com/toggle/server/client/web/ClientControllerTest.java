@@ -18,7 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
@@ -46,7 +46,7 @@ class ClientControllerTest {
     @MockitoBean
     private DeregisterClientUseCase deregisterClientUseCase;
 
-    private static final LocalDateTime NOW = LocalDateTime.now();
+    private static final Instant NOW = Instant.now();
 
     private static ClientInstance aClientInstance() {
         return new ClientInstance(

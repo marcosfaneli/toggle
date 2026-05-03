@@ -2,7 +2,7 @@ package com.toggle.server.toggle.persistence;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "feature_toggle_value")
@@ -23,7 +23,7 @@ class ToggleValueEntity {
     private String valueRaw;
 
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
     Long getId() { return id; }
     void setId(Long id) { this.id = id; }
@@ -37,6 +37,6 @@ class ToggleValueEntity {
     String getValueRaw() { return valueRaw; }
     void setValueRaw(String valueRaw) { this.valueRaw = valueRaw; }
 
-    LocalDateTime getUpdatedAt() { return updatedAt; }
-    void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    Instant getUpdatedAt() { return updatedAt; }
+    void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 }

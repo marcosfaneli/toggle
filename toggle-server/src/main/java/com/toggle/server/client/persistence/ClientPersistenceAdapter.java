@@ -9,7 +9,8 @@ import com.toggle.server.client.domain.ClientSubscription;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 
 @Component
@@ -17,11 +18,14 @@ public class ClientPersistenceAdapter {
 
     private final ClientInstanceRepository instanceRepository;
     private final ClientSubscriptionRepository subscriptionRepository;
+    private final Clock clock;
 
     public ClientPersistenceAdapter(ClientInstanceRepository instanceRepository,
-                                    ClientSubscriptionRepository subscriptionRepository) {
+                                    ClientSubscriptionRepository subscriptionRepository,
+                                    Clock appClock) {
         this.instanceRepository = instanceRepository;
         this.subscriptionRepository = subscriptionRepository;
+        this.clock = appClock;
     }
 
     @Transactional
@@ -34,7 +38,7 @@ public class ClientPersistenceAdapter {
 
         if (isNew) {
             entity.setPublicId(UlidCreator.getMonotonicUlid().toString());
-            entity.setRegisteredAt(LocalDateTime.now());
+            entity.setRegisteredAt(Instant.now(clock));
         }
 
         entity.setServiceName(instance.serviceName());
@@ -56,7 +60,7 @@ public class ClientPersistenceAdapter {
             subEntity.setClientInstanceId(saved.getId());
             subEntity.setToggleName(subscription.toggleName());
             subEntity.setConsumeMode(subscription.consumeMode().name());
-            subEntity.setCreatedAt(LocalDateTime.now());
+            subEntity.setCreatedAt(Instant.now(clock));
             subscriptionRepository.save(subEntity);
         }
 
@@ -81,14 +85,14 @@ public class ClientPersistenceAdapter {
             throw new ClientInstanceInactiveException(serviceName, instanceId);
         }
 
-        var now = LocalDateTime.now();
+        var now = Instant.now(clock);
         entity.setLastHeartbeatAt(now);
         entity.setLastSeenAt(now);
         instanceRepository.save(entity);
     }
 
     @Transactional
-    public int expireStaleInstances(LocalDateTime threshold) {
+    public int expireStaleInstances(Instant threshold) {
         var stale = instanceRepository.findAllByStatusAndLastHeartbeatAtBefore(
                 ClientInstanceStatus.ACTIVE.name(), threshold);
 

@@ -1,6 +1,6 @@
 package com.toggle.server.client.domain;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record ClientInstance(
         String publicId,
@@ -10,5 +10,5 @@ public record ClientInstance(
         String namespace,
         String callbackUrl,
         ClientInstanceStatus status,
-        LocalDateTime registeredAt) {
+        Instant registeredAt) {
 }

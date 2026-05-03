@@ -14,16 +14,19 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 
 @Component
 public class TogglePersistenceAdapter {
 
     private final ToggleRepository repository;
+    private final Clock clock;
 
-    public TogglePersistenceAdapter(ToggleRepository repository) {
+    public TogglePersistenceAdapter(ToggleRepository repository, Clock appClock) {
         this.repository = repository;
+        this.clock = appClock;
     }
 
     @Transactional(readOnly = true)
@@ -47,14 +50,14 @@ public class TogglePersistenceAdapter {
         entity.setOwnerServiceName(command.ownerServiceName());
         entity.setEnabled(command.enabled());
         entity.setVersion(1L);
-        entity.setUpdatedAt(LocalDateTime.now());
+        entity.setUpdatedAt(Instant.now(clock));
 
         if (command.value() != null) {
             var valueEntity = new ToggleValueEntity();
             valueEntity.setToggle(entity);
             valueEntity.setValueType(command.value().type());
             valueEntity.setValueRaw(command.value().raw());
-            valueEntity.setUpdatedAt(LocalDateTime.now());
+            valueEntity.setUpdatedAt(Instant.now(clock));
             entity.setValue(valueEntity);
         }
 
@@ -81,20 +84,20 @@ public class TogglePersistenceAdapter {
                 if (entity.getValue() != null) {
                     entity.getValue().setValueType(set.type());
                     entity.getValue().setValueRaw(set.raw());
-                    entity.getValue().setUpdatedAt(LocalDateTime.now());
+                    entity.getValue().setUpdatedAt(Instant.now(clock));
                 } else {
                     var valueEntity = new ToggleValueEntity();
                     valueEntity.setToggle(entity);
                     valueEntity.setValueType(set.type());
                     valueEntity.setValueRaw(set.raw());
-                    valueEntity.setUpdatedAt(LocalDateTime.now());
+                    valueEntity.setUpdatedAt(Instant.now(clock));
                     entity.setValue(valueEntity);
                 }
             }
         }
 
         entity.setVersion(entity.getVersion() + 1);
-        entity.setUpdatedAt(LocalDateTime.now());
+        entity.setUpdatedAt(Instant.now(clock));
 
         return toDomain(repository.save(entity));
     }

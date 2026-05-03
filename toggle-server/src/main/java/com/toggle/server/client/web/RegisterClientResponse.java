@@ -5,7 +5,7 @@ import com.toggle.server.client.application.RegisterClientResult;
 import com.toggle.server.toggle.domain.Toggle;
 import com.toggle.server.toggle.domain.ToggleValue;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public record RegisterClientResponse(
@@ -19,7 +19,7 @@ public record RegisterClientResponse(
             boolean enabled,
             ValueEntry value,
             long version,
-            LocalDateTime updatedAt) {
+            Instant updatedAt) {
 
         public record ValueEntry(String type, String raw) {
             static ValueEntry from(ToggleValue toggleValue) {

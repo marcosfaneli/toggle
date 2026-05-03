@@ -1,6 +1,6 @@
 package com.toggle.server.toggle.domain;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record Toggle(
         String publicId,
@@ -8,6 +8,6 @@ public record Toggle(
         String ownerServiceName,
         boolean enabled,
         long version,
-        LocalDateTime updatedAt,
+        Instant updatedAt,
         ToggleValue value) {
 }

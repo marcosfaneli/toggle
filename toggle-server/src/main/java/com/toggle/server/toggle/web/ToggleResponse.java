@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.toggle.server.toggle.domain.Toggle;
 import com.toggle.server.toggle.domain.ToggleValue;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ToggleResponse(
@@ -13,7 +13,7 @@ public record ToggleResponse(
         String ownerServiceName,
         boolean enabled,
         long version,
-        LocalDateTime updatedAt,
+    Instant updatedAt,
         ValueResponse value) {
 
     public record ValueResponse(String type, String raw) {

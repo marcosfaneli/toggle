@@ -26,7 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -63,7 +63,7 @@ class ToggleControllerTest {
     @Test
     void shouldCreateToggleAndReturn201() throws Exception {
         var request = new CreateToggleRequest("novo-checkout", "checkout-service", true, null);
-        var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVWX", "novo-checkout", "checkout-service", true, 1L, LocalDateTime.now(), null);
+        var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVWX", "novo-checkout", "checkout-service", true, 1L, Instant.now(), null);
 
         when(createToggleUseCase.execute(any(CreateToggleCommand.class))).thenReturn(toggle);
 
@@ -85,7 +85,7 @@ class ToggleControllerTest {
         var valueRequest = new CreateToggleRequest.ValueRequest("STRING", "enabled");
         var request = new CreateToggleRequest("novo-checkout", "checkout-service", true, valueRequest);
         var toggleValue = new ToggleValue(ValueType.STRING, "enabled");
-        var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVWX", "novo-checkout", "checkout-service", true, 1L, LocalDateTime.now(), toggleValue);
+        var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVWX", "novo-checkout", "checkout-service", true, 1L, Instant.now(), toggleValue);
 
         when(createToggleUseCase.execute(any(CreateToggleCommand.class))).thenReturn(toggle);
 
@@ -104,7 +104,7 @@ class ToggleControllerTest {
         var valueRequest = new CreateToggleRequest.ValueRequest("NUMBER", "42");
         var request = new CreateToggleRequest("limite-requisicoes", "api-gateway", true, valueRequest);
         var toggleValue = new ToggleValue(ValueType.NUMBER, "42");
-        var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVXY", "limite-requisicoes", "api-gateway", true, 1L, LocalDateTime.now(), toggleValue);
+        var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVXY", "limite-requisicoes", "api-gateway", true, 1L, Instant.now(), toggleValue);
 
         when(createToggleUseCase.execute(any(CreateToggleCommand.class))).thenReturn(toggle);
 
@@ -196,7 +196,7 @@ class ToggleControllerTest {
 
     @Test
     void shouldReturnPagedTogglesAndLinkHeader() throws Exception {
-        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", true, 1L, LocalDateTime.now(), null);
+        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", true, 1L, Instant.now(), null);
         var pageable = PageRequest.of(0, 20);
                 var slice = newSlice(pageable, false, toggle);
 
@@ -216,7 +216,7 @@ class ToggleControllerTest {
 
     @Test
     void shouldFilterByEnabledTrue() throws Exception {
-        var toggle = new Toggle("01ID", "enabled-toggle", "checkout-service", true, 1L, LocalDateTime.now(), null);
+        var toggle = new Toggle("01ID", "enabled-toggle", "checkout-service", true, 1L, Instant.now(), null);
         var pageable = PageRequest.of(0, 20);
                 var slice = newSlice(pageable, false, toggle);
 
@@ -231,7 +231,7 @@ class ToggleControllerTest {
 
     @Test
     void shouldFilterByEnabledFalse() throws Exception {
-        var toggle = new Toggle("01ID", "disabled-toggle", "checkout-service", false, 1L, LocalDateTime.now(), null);
+        var toggle = new Toggle("01ID", "disabled-toggle", "checkout-service", false, 1L, Instant.now(), null);
         var pageable = PageRequest.of(0, 20);
                 var slice = newSlice(pageable, false, toggle);
 
@@ -280,7 +280,7 @@ class ToggleControllerTest {
 
     @Test
     void shouldIncludeNextLinkWhenHasNextPage() throws Exception {
-        var toggle = new Toggle("01ID", "toggle-a", "checkout-service", true, 1L, LocalDateTime.now(), null);
+        var toggle = new Toggle("01ID", "toggle-a", "checkout-service", true, 1L, Instant.now(), null);
         var pageable = PageRequest.of(0, 20);
                 var slice = newSlice(pageable, true, toggle);
 
@@ -301,7 +301,7 @@ class ToggleControllerTest {
 
     @Test
     void shouldUpdateEnabledAndReturn200() throws Exception {
-        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", false, 2L, LocalDateTime.now(), null);
+        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", false, 2L, Instant.now(), null);
         when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
 
         mockMvc.perform(patch("/toggles/novo-checkout")
@@ -316,7 +316,7 @@ class ToggleControllerTest {
     @Test
     void shouldUpdateValueAndReturn200() throws Exception {
         var toggleValue = new ToggleValue(ValueType.NUMBER, "99");
-        var toggle = new Toggle("01ID", "limite", "api-gateway", true, 2L, LocalDateTime.now(), toggleValue);
+        var toggle = new Toggle("01ID", "limite", "api-gateway", true, 2L, Instant.now(), toggleValue);
         when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
 
         mockMvc.perform(patch("/toggles/limite")
@@ -330,7 +330,7 @@ class ToggleControllerTest {
 
     @Test
     void shouldRemoveValueAndReturn200() throws Exception {
-        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", true, 2L, LocalDateTime.now(), null);
+        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", true, 2L, Instant.now(), null);
         when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
 
         mockMvc.perform(patch("/toggles/novo-checkout")
@@ -344,7 +344,7 @@ class ToggleControllerTest {
     @Test
     void shouldKeepValueWhenValueFieldAbsentAndReturn200() throws Exception {
         var toggleValue = new ToggleValue(ValueType.STRING, "enabled");
-        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", false, 2L, LocalDateTime.now(), toggleValue);
+        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", false, 2L, Instant.now(), toggleValue);
         when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
 
         mockMvc.perform(patch("/toggles/novo-checkout")

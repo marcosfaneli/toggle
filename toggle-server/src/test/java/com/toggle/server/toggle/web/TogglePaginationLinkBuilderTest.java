@@ -7,7 +7,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +17,7 @@ class TogglePaginationLinkBuilderTest {
     private final TogglePaginationLinkBuilder builder = new TogglePaginationLinkBuilder();
 
     private static Toggle anyToggle() {
-        return new Toggle("01ID", "t", "svc", true, 1L, LocalDateTime.now(), null);
+        return new Toggle("01ID", "t", "svc", true, 1L, Instant.now(), null);
     }
 
     @SuppressWarnings("null")

@@ -2,7 +2,7 @@ package com.toggle.server.client.persistence;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "client_instance")
@@ -34,13 +34,13 @@ class ClientInstanceEntity {
     private String status;
 
     @Column(name = "registered_at", nullable = false)
-    private LocalDateTime registeredAt;
+    private Instant registeredAt;
 
     @Column(name = "last_heartbeat_at")
-    private LocalDateTime lastHeartbeatAt;
+    private Instant lastHeartbeatAt;
 
     @Column(name = "last_seen_at")
-    private LocalDateTime lastSeenAt;
+    private Instant lastSeenAt;
 
     Long getId() { return id; }
     void setId(Long id) { this.id = id; }
@@ -66,12 +66,12 @@ class ClientInstanceEntity {
     String getStatus() { return status; }
     void setStatus(String status) { this.status = status; }
 
-    LocalDateTime getRegisteredAt() { return registeredAt; }
-    void setRegisteredAt(LocalDateTime registeredAt) { this.registeredAt = registeredAt; }
+    Instant getRegisteredAt() { return registeredAt; }
+    void setRegisteredAt(Instant registeredAt) { this.registeredAt = registeredAt; }
 
-    LocalDateTime getLastHeartbeatAt() { return lastHeartbeatAt; }
-    void setLastHeartbeatAt(LocalDateTime lastHeartbeatAt) { this.lastHeartbeatAt = lastHeartbeatAt; }
+    Instant getLastHeartbeatAt() { return lastHeartbeatAt; }
+    void setLastHeartbeatAt(Instant lastHeartbeatAt) { this.lastHeartbeatAt = lastHeartbeatAt; }
 
-    LocalDateTime getLastSeenAt() { return lastSeenAt; }
-    void setLastSeenAt(LocalDateTime lastSeenAt) { this.lastSeenAt = lastSeenAt; }
+    Instant getLastSeenAt() { return lastSeenAt; }
+    void setLastSeenAt(Instant lastSeenAt) { this.lastSeenAt = lastSeenAt; }
 }
