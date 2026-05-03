@@ -255,7 +255,7 @@ Fora de escopo nesta historia:
 
 ---
 
-## H7 - Entrega de atualizacao via PUT para clientes
+## H7 - Entrega de atualizacao via PUT para clientes ✅ CONCLUÍDA
 
 Objetivo:
 
