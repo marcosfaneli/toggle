@@ -74,6 +74,21 @@
       "method": "DELETE",
       "url": "http://localhost:8080/clients/register/pedido-7d8d4c7f6f-abcde?serviceName=pedido-service",
       "headers": []
+    },
+    {
+      "_id": "req_heartbeat",
+      "_type": "request",
+      "parentId": "wrk_toggle_server",
+      "name": "POST /clients/heartbeat",
+      "method": "POST",
+      "url": "http://localhost:8080/clients/heartbeat",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"serviceName\": \"pedido-service\",\n  \"instanceId\": \"pedido-7d8d4c7f6f-abcde\"\n}"
+      }
     }
   ]
 }
