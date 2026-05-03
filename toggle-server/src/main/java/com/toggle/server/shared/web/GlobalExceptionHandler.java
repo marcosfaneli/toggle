@@ -1,5 +1,7 @@
 package com.toggle.server.shared.web;
 
+import com.toggle.server.client.domain.ClientInstanceNotFoundException;
+import com.toggle.server.client.domain.InvalidToggleSubscriptionException;
 import com.toggle.server.toggle.domain.ToggleAlreadyExistsException;
 import com.toggle.server.toggle.domain.ToggleNotFoundException;
 import org.springframework.http.ProblemDetail;
@@ -16,6 +18,18 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ClientInstanceNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ProblemDetail handleClientInstanceNotFound(ClientInstanceNotFoundException exception) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(InvalidToggleSubscriptionException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ProblemDetail handleInvalidToggleSubscription(InvalidToggleSubscriptionException exception) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
 
     @ExceptionHandler(ToggleAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.CONFLICT)

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 public class TogglePersistenceAdapter {
@@ -23,6 +24,11 @@ public class TogglePersistenceAdapter {
 
     public TogglePersistenceAdapter(ToggleRepository repository) {
         this.repository = repository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Toggle> findAllByNames(List<String> names) {
+        return repository.findAllByNameIn(names).stream().map(this::toDomain).toList();
     }
 
     @Transactional(readOnly = true)
