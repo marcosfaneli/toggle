@@ -50,6 +50,30 @@
         "mimeType": "application/json",
         "text": "{\n  \"enabled\": false,\n  \"value\": {\n    \"type\": \"NUMBER\",\n    \"raw\": \"42\"\n  }\n}"
       }
+    },
+    {
+      "_id": "req_register_client",
+      "_type": "request",
+      "parentId": "wrk_toggle_server",
+      "name": "POST /clients/register",
+      "method": "POST",
+      "url": "http://localhost:8080/clients/register",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"serviceName\": \"pedido-service\",\n  \"instanceId\": \"pedido-7d8d4c7f6f-abcde\",\n  \"podName\": \"pedido-7d8d4c7f6f-abcde\",\n  \"namespace\": \"payments\",\n  \"callbackUrl\": \"http://10.42.1.25:8080/internal/feature-toggles\",\n  \"subscriptions\": [\n    { \"toggleName\": \"minha-feature\", \"consumeMode\": \"LOCAL_CACHE\" }\n  ]\n}"
+      }
+    },
+    {
+      "_id": "req_deregister_client",
+      "_type": "request",
+      "parentId": "wrk_toggle_server",
+      "name": "DELETE /clients/register/{instanceId}",
+      "method": "DELETE",
+      "url": "http://localhost:8080/clients/register/pedido-7d8d4c7f6f-abcde?serviceName=pedido-service",
+      "headers": []
     }
   ]
 }

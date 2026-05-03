@@ -173,7 +173,7 @@ Fora de escopo nesta historia:
 
 ---
 
-## H5 - Registrar instancia cliente (POST /clients/register)
+## H5 - Registrar instancia cliente (POST /clients/register) ✅ CONCLUÍDA
 
 Objetivo:
 
@@ -359,8 +359,8 @@ Criterios de aceite:
 1. H1 - Criar toggle ✅
 2. H2 - Valor opcional ✅
 3. H3 - Listar toggles com paginacao ✅
-4. H4 - Atualizar toggle
-5. H5 - Registro de instancia
+5. H4 - Atualizar toggle ✅
+6. H5 - Registro de instancia ✅
 6. H6 - Heartbeat
 7. H7 - Entrega via PUT + sync state
 8. H8 - Historico de entrega
