@@ -104,6 +104,16 @@ public class ClientPersistenceAdapter {
         return stale.size();
     }
 
+    public List<SubscriberView> findActiveSubscribersForToggle(String toggleName) {
+        return subscriptionRepository.findByToggleName(toggleName).stream()
+                .map(sub -> instanceRepository.findById(sub.getClientInstanceId()).orElse(null))
+                .filter(inst -> inst != null && ClientInstanceStatus.ACTIVE.name().equals(inst.getStatus()))
+                .map(inst -> new SubscriberView(inst.getId(), inst.getCallbackUrl()))
+                .toList();
+    }
+
+    public record SubscriberView(Long clientInstanceId, String callbackUrl) {}
+
     private ClientInstance toDomain(ClientInstanceEntity entity) {
         return new ClientInstance(
                 entity.getPublicId(),

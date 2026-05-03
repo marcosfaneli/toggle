@@ -102,6 +102,14 @@ public class TogglePersistenceAdapter {
         return toDomain(repository.save(entity));
     }
 
+    @Transactional(readOnly = true)
+    public java.util.Optional<ToggleInternalId> findToggleInternalId(String name, String ownerServiceName) {
+        return repository.findByNameAndOwnerServiceName(name, ownerServiceName)
+                .map(e -> new ToggleInternalId(e.getId(), toDomain(e)));
+    }
+
+    public record ToggleInternalId(Long id, Toggle toggle) {}
+
     private Toggle toDomain(ToggleEntity entity) {
         ToggleValue value = null;
         if (entity.getValue() != null) {

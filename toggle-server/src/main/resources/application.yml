@@ -32,3 +32,5 @@ toggle:
   heartbeat:
     expiration-timeout-minutes: 5
     expiration-check-interval-ms: 60000
+  delivery:
+    timeout-ms: 3000
