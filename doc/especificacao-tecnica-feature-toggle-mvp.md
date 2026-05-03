@@ -358,6 +358,11 @@ Tracing:
 ### 5.7 Performance e Escalabilidade (Servidor)
 
 - PK/FK numericas (BIGINT) para reduzir custo de join/indice.
+- Operacoes de leitura devem usar `@Transactional(readOnly = true)`:
+  - O Hibernate nao tira snapshot das entidades carregadas (menos memoria).
+  - O dirty checking e desativado — sem comparacao estado-atual x snapshot no flush.
+  - Nao ha flush antes de queries, reduzindo roundtrips ao banco.
+  - Alguns datasources/drivers roteiam transacoes read-only para replicas de leitura automaticamente.
 - Indices recomendados:
   - FeatureToggle(name, ownerServiceName) UNIQUE
   - ClientInstance(serviceName, instanceId) UNIQUE
