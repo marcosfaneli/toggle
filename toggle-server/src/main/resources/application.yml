@@ -17,3 +17,7 @@ spring:
 
 server:
   port: 8080
+
+toggle:
+  api:
+    max-page-size: 100
