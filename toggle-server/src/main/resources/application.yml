@@ -21,3 +21,6 @@ server:
 toggle:
   api:
     max-page-size: 100
+  heartbeat:
+    expiration-timeout-minutes: 5
+    expiration-check-interval-ms: 60000

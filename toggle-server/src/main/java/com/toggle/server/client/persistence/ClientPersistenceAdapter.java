@@ -2,6 +2,7 @@ package com.toggle.server.client.persistence;
 
 import com.github.f4b6a3.ulid.UlidCreator;
 import com.toggle.server.client.domain.ClientInstance;
+import com.toggle.server.client.domain.ClientInstanceInactiveException;
 import com.toggle.server.client.domain.ClientInstanceNotFoundException;
 import com.toggle.server.client.domain.ClientInstanceStatus;
 import com.toggle.server.client.domain.ClientSubscription;
@@ -69,6 +70,34 @@ public class ClientPersistenceAdapter {
 
         entity.setStatus(ClientInstanceStatus.INACTIVE.name());
         instanceRepository.save(entity);
+    }
+
+    @Transactional
+    public void heartbeat(String serviceName, String instanceId) {
+        var entity = instanceRepository.findByServiceNameAndInstanceId(serviceName, instanceId)
+                .orElseThrow(() -> new ClientInstanceNotFoundException(serviceName, instanceId));
+
+        if (ClientInstanceStatus.INACTIVE.name().equals(entity.getStatus())) {
+            throw new ClientInstanceInactiveException(serviceName, instanceId);
+        }
+
+        var now = LocalDateTime.now();
+        entity.setLastHeartbeatAt(now);
+        entity.setLastSeenAt(now);
+        instanceRepository.save(entity);
+    }
+
+    @Transactional
+    public int expireStaleInstances(LocalDateTime threshold) {
+        var stale = instanceRepository.findAllByStatusAndLastHeartbeatAtBefore(
+                ClientInstanceStatus.ACTIVE.name(), threshold);
+
+        for (var entity : stale) {
+            entity.setStatus(ClientInstanceStatus.INACTIVE.name());
+            instanceRepository.save(entity);
+        }
+
+        return stale.size();
     }
 
     private ClientInstance toDomain(ClientInstanceEntity entity) {

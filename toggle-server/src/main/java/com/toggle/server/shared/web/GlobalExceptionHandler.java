@@ -1,5 +1,6 @@
 package com.toggle.server.shared.web;
 
+import com.toggle.server.client.domain.ClientInstanceInactiveException;
 import com.toggle.server.client.domain.ClientInstanceNotFoundException;
 import com.toggle.server.client.domain.InvalidToggleSubscriptionException;
 import com.toggle.server.toggle.domain.ToggleAlreadyExistsException;
@@ -23,6 +24,12 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ProblemDetail handleClientInstanceNotFound(ClientInstanceNotFoundException exception) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(ClientInstanceInactiveException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ProblemDetail handleClientInstanceInactive(ClientInstanceInactiveException exception) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
     }
 
     @ExceptionHandler(InvalidToggleSubscriptionException.class)
