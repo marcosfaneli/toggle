@@ -31,6 +31,6 @@ public class HeartbeatController {
                 "event=client_heartbeat_requested serviceName={} instanceId={}",
                 request.serviceName(),
                 request.instanceId());
-        heartbeatUseCase.execute(new HeartbeatCommand(request.serviceName(), request.instanceId()))
+        heartbeatUseCase.execute(new HeartbeatCommand(request.serviceName(), request.instanceId()));
     }
 }

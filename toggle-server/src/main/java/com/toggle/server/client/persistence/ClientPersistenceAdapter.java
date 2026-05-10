@@ -114,7 +114,7 @@ public class ClientPersistenceAdapter {
                     "event=client_heartbeat_rejected serviceName={} instanceId={} reason=not_found",
                     serviceName,
                     instanceId);
-            throw new ClientInstanceNotFoundException(serviceName, instanceId)
+            throw new ClientInstanceNotFoundException(serviceName, instanceId);
         }
 
         var entity = found.get();
@@ -127,7 +127,7 @@ public class ClientPersistenceAdapter {
                     entity.getPublicId(),
                     entity.getNamespace(),
                     entity.getPodName());
-            throw new ClientInstanceInactiveException(serviceName, instanceId)
+            throw new ClientInstanceInactiveException(serviceName, instanceId);
         }
 
         var now = Instant.now(clock);
@@ -142,7 +142,7 @@ public class ClientPersistenceAdapter {
                 saved.getPublicId(),
                 saved.getNamespace(),
                 saved.getPodName(),
-                saved.getLastHeartbeatAt())
+                saved.getLastHeartbeatAt());
     }
 
     @Transactional
