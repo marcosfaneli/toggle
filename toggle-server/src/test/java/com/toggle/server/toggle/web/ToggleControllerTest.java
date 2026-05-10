@@ -3,6 +3,7 @@ package com.toggle.server.toggle.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.toggle.server.toggle.application.CreateToggleCommand;
 import com.toggle.server.toggle.application.CreateToggleUseCase;
+import com.toggle.server.toggle.application.GetToggleByNameUseCase;
 import com.toggle.server.toggle.application.ListTogglesQuery;
 import com.toggle.server.toggle.application.ListTogglesUseCase;
 import com.toggle.server.toggle.application.UpdateToggleCommand;
