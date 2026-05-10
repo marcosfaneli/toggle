@@ -17,6 +17,6 @@ class UpdateToggleCommandMapper {
                     request.getValue().type(),
                     request.getValue().raw());
         }
-        return new UpdateToggleCommand(name, request.getOwnerServiceName(), request.getEnabled(), valueUpdate);
+        return new UpdateToggleCommand(name, request.getEnabled(), valueUpdate);
     }
 }

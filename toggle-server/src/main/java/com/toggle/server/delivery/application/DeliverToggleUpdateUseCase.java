@@ -32,9 +32,9 @@ public class DeliverToggleUpdateUseCase {
     }
 
     public void execute(ToggleUpdatedEvent event) {
-        var found = toggleAdapter.findToggleInternalId(event.toggleName(), event.ownerServiceName());
+        var found = toggleAdapter.findToggleInternalId(event.toggleName());
         if (found.isEmpty()) {
-            log.warn("Toggle not found during delivery: name={}, owner={}", event.toggleName(), event.ownerServiceName());
+            log.warn("Toggle not found during delivery: name={}", event.toggleName());
             return;
         }
 

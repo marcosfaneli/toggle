@@ -2,7 +2,6 @@ package com.toggle.server.toggle.application;
 
 public record UpdateToggleCommand(
         String name,
-        String ownerServiceName,
         Boolean enabled,
         ValueUpdate valueUpdate) {
 

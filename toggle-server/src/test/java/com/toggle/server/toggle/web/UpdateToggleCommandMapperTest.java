@@ -50,7 +50,7 @@ class UpdateToggleCommandMapperTest {
         UpdateToggleCommand command = mapper.toCommand("my-toggle", request);
 
         assertThat(command.name()).isEqualTo("my-toggle");
-        assertThat(command.ownerServiceName()).isEqualTo("checkout-service");
+        assertThat(command.enabled()).isNull();
     }
 
     @Test
@@ -60,6 +60,6 @@ class UpdateToggleCommandMapperTest {
         UpdateToggleCommand command = mapper.toCommand("my-toggle", request);
 
         assertThat(command.name()).isEqualTo("my-toggle");
-        assertThat(command.ownerServiceName()).isNull();
+        assertThat(command.enabled()).isNull();
     }
 }

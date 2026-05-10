@@ -103,7 +103,7 @@ public class TogglePersistenceAdapter {
     }
 
     @Transactional(readOnly = true)
-    public java.util.Optional<ToggleInternalId> findToggleInternalId(String name, String ownerServiceName) {
+    public java.util.Optional<ToggleInternalId> findToggleInternalId(String name) {
         return repository.findByName(name)
                 .map(e -> new ToggleInternalId(e.getId(), toDomain(e)));
     }

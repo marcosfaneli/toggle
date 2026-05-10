@@ -21,7 +21,7 @@ public class UpdateToggleUseCase {
     public Toggle execute(UpdateToggleCommand command) {
         Toggle toggle = persistenceAdapter.update(command);
         eventPublisher.publishEvent(
-                new ToggleUpdatedEvent(toggle.name(), toggle.ownerServiceName(), toggle.version()));
+                new ToggleUpdatedEvent(toggle.name(), toggle.version()));
         return toggle;
     }
 }

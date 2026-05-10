@@ -65,11 +65,11 @@ class DeliverToggleUpdateUseCaseTest {
             Instant.parse("2026-05-03T10:00:00Z"),
             new ToggleValue(ValueType.STRING, "blue"));
 
-    private static final ToggleUpdatedEvent EVENT = new ToggleUpdatedEvent("my-feature", "my-service", 3L);
+    private static final ToggleUpdatedEvent EVENT = new ToggleUpdatedEvent("my-feature", 3L);
 
     @Test
     void deliver_whenToggleNotFound_doesNothing() {
-        when(toggleAdapter.findToggleInternalId("my-feature", "my-service")).thenReturn(Optional.empty());
+        when(toggleAdapter.findToggleInternalId("my-feature")).thenReturn(Optional.empty());
 
         useCase.execute(EVENT);
 
@@ -79,7 +79,7 @@ class DeliverToggleUpdateUseCaseTest {
 
     @Test
     void deliver_whenNoActiveSubscribers_doesNotCallHttp() {
-        when(toggleAdapter.findToggleInternalId("my-feature", "my-service"))
+        when(toggleAdapter.findToggleInternalId("my-feature"))
                 .thenReturn(Optional.of(new TogglePersistenceAdapter.ToggleInternalId(10L, TOGGLE)));
         when(clientAdapter.findActiveSubscribersForToggle("my-feature")).thenReturn(List.of());
 
@@ -92,7 +92,7 @@ class DeliverToggleUpdateUseCaseTest {
     @Test
     void deliver_whenCallbackSucceeds_marksSynced() {
         var subscriber = new ClientPersistenceAdapter.SubscriberView(42L, "http://client-svc:8080/toggles");
-        when(toggleAdapter.findToggleInternalId("my-feature", "my-service"))
+        when(toggleAdapter.findToggleInternalId("my-feature"))
                 .thenReturn(Optional.of(new TogglePersistenceAdapter.ToggleInternalId(10L, TOGGLE)));
         when(clientAdapter.findActiveSubscribersForToggle("my-feature")).thenReturn(List.of(subscriber));
         when(deliveryAdapter.upsertPendingResponse(10L, 42L, 3L)).thenReturn(99L);
@@ -108,7 +108,7 @@ class DeliverToggleUpdateUseCaseTest {
     @Test
     void deliver_whenCallbackFails_marksOutOfSync() {
         var subscriber = new ClientPersistenceAdapter.SubscriberView(42L, "http://client-svc:8080/toggles");
-        when(toggleAdapter.findToggleInternalId("my-feature", "my-service"))
+        when(toggleAdapter.findToggleInternalId("my-feature"))
                 .thenReturn(Optional.of(new TogglePersistenceAdapter.ToggleInternalId(10L, TOGGLE)));
         when(clientAdapter.findActiveSubscribersForToggle("my-feature")).thenReturn(List.of(subscriber));
         when(deliveryAdapter.upsertPendingResponse(10L, 42L, 3L)).thenReturn(99L);
@@ -123,7 +123,7 @@ class DeliverToggleUpdateUseCaseTest {
     @Test
     void deliver_payloadIncludesValueWhenPresent() {
         var subscriber = new ClientPersistenceAdapter.SubscriberView(42L, "http://client-svc:8080/toggles");
-        when(toggleAdapter.findToggleInternalId("my-feature", "my-service"))
+        when(toggleAdapter.findToggleInternalId("my-feature"))
                 .thenReturn(Optional.of(new TogglePersistenceAdapter.ToggleInternalId(10L, TOGGLE_WITH_VALUE)));
         when(clientAdapter.findActiveSubscribersForToggle("my-feature")).thenReturn(List.of(subscriber));
         when(deliveryAdapter.upsertPendingResponse(anyLong(), anyLong(), anyLong())).thenReturn(99L);
@@ -143,7 +143,7 @@ class DeliverToggleUpdateUseCaseTest {
     @Test
     void deliver_payloadHasNullValueWhenToggleHasNoValue() {
         var subscriber = new ClientPersistenceAdapter.SubscriberView(42L, "http://client-svc:8080/toggles");
-        when(toggleAdapter.findToggleInternalId("my-feature", "my-service"))
+        when(toggleAdapter.findToggleInternalId("my-feature"))
                 .thenReturn(Optional.of(new TogglePersistenceAdapter.ToggleInternalId(10L, TOGGLE)));
         when(clientAdapter.findActiveSubscribersForToggle("my-feature")).thenReturn(List.of(subscriber));
         when(deliveryAdapter.upsertPendingResponse(anyLong(), anyLong(), anyLong())).thenReturn(99L);
