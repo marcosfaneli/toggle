@@ -7,6 +7,8 @@ import com.toggle.server.client.domain.ConsumeMode;
 import com.toggle.server.client.domain.InvalidToggleSubscriptionException;
 import com.toggle.server.client.persistence.ClientPersistenceAdapter;
 import com.toggle.server.toggle.persistence.TogglePersistenceAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -16,6 +18,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class RegisterClientUseCase {
+
+        private static final Logger log = LoggerFactory.getLogger(RegisterClientUseCase.class);
 
     private final ClientPersistenceAdapter clientPersistenceAdapter;
     private final TogglePersistenceAdapter togglePersistenceAdapter;
@@ -45,6 +49,11 @@ public class RegisterClientUseCase {
                 .toList();
 
         if (!unknownNames.isEmpty()) {
+            log.info(
+                    "event=client_register_invalid_subscription serviceName={} instanceId={} unknownToggles={}",
+                    command.serviceName(),
+                    command.instanceId(),
+                    unknownNames);
             throw new InvalidToggleSubscriptionException(unknownNames);
         }
 
@@ -68,6 +77,14 @@ public class RegisterClientUseCase {
                 .toList();
 
         var saved = clientPersistenceAdapter.upsert(instance, subscriptions);
+
+        log.info(
+                "event=client_registered serviceName={} instanceId={} publicId={} namespace={} podName={}",
+                saved.serviceName(),
+                saved.instanceId(),
+                saved.publicId(),
+                saved.namespace(),
+                saved.podName());
 
         return new RegisterClientResult(saved, foundToggles);
     }

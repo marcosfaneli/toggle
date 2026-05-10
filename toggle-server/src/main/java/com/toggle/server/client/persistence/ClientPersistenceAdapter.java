@@ -6,6 +6,8 @@ import com.toggle.server.client.domain.ClientInstanceInactiveException;
 import com.toggle.server.client.domain.ClientInstanceNotFoundException;
 import com.toggle.server.client.domain.ClientInstanceStatus;
 import com.toggle.server.client.domain.ClientSubscription;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,8 @@ import java.util.List;
 
 @Component
 public class ClientPersistenceAdapter {
+
+    private static final Logger log = LoggerFactory.getLogger(ClientPersistenceAdapter.class);
 
     private final ClientInstanceRepository instanceRepository;
     private final ClientSubscriptionRepository subscriptionRepository;
@@ -91,7 +95,15 @@ public class ClientPersistenceAdapter {
                 .orElseThrow(() -> new ClientInstanceNotFoundException(serviceName, instanceId));
 
         entity.setStatus(ClientInstanceStatus.INACTIVE.name());
-        instanceRepository.save(entity);
+        var saved = instanceRepository.save(entity);
+
+        log.info(
+            "event=client_deregistered serviceName={} instanceId={} publicId={} namespace={} podName={} source=manual",
+            saved.getServiceName(),
+            saved.getInstanceId(),
+            saved.getPublicId(),
+            saved.getNamespace(),
+            saved.getPodName());
     }
 
     @Transactional
@@ -116,7 +128,15 @@ public class ClientPersistenceAdapter {
 
         for (var entity : stale) {
             entity.setStatus(ClientInstanceStatus.INACTIVE.name());
-            instanceRepository.save(entity);
+            var saved = instanceRepository.save(entity);
+            log.info(
+                    "event=client_expired serviceName={} instanceId={} publicId={} namespace={} podName={} threshold={} source=heartbeat-timeout",
+                    saved.getServiceName(),
+                    saved.getInstanceId(),
+                    saved.getPublicId(),
+                    saved.getNamespace(),
+                    saved.getPodName(),
+                    threshold);
         }
 
         return stale.size();
