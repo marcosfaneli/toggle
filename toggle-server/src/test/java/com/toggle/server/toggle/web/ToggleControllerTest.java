@@ -60,6 +60,25 @@ class ToggleControllerTest {
     @MockitoBean
     private UpdateToggleUseCase updateToggleUseCase;
 
+        @MockitoBean
+        private GetToggleByNameUseCase getToggleByNameUseCase;
+        @Test
+        void shouldReturnToggleByNameAndReturn200() throws Exception {
+                var toggleValue = new ToggleValue(ValueType.STRING, "enabled");
+                var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVWX", "novo-checkout", "checkout-service", true, 1L, Instant.parse("2026-05-10T12:00:00Z"), toggleValue);
+
+                when(getToggleByNameUseCase.execute("novo-checkout")).thenReturn(toggle);
+
+                mockMvc.perform(get("/toggles/novo-checkout"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.name").value("novo-checkout"))
+                                .andExpect(jsonPath("$.ownerServiceName").value("checkout-service"))
+                                .andExpect(jsonPath("$.enabled").value(true))
+                                .andExpect(jsonPath("$.version").value(1))
+                                .andExpect(jsonPath("$.value.type").value("STRING"))
+                                .andExpect(jsonPath("$.value.raw").value("enabled"));
+        }
+
     @Test
     void shouldCreateToggleAndReturn201() throws Exception {
         var request = new CreateToggleRequest("novo-checkout", "checkout-service", true, null);

@@ -1,6 +1,7 @@
 package com.toggle.server.toggle.web;
 
 import com.toggle.server.toggle.application.CreateToggleUseCase;
+import com.toggle.server.toggle.application.GetToggleByNameUseCase;
 import com.toggle.server.toggle.application.ListTogglesQuery;
 import com.toggle.server.toggle.application.ListTogglesUseCase;
 import com.toggle.server.toggle.application.UpdateToggleUseCase;
@@ -20,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class ToggleController {
 
     private final CreateToggleUseCase createToggleUseCase;
+    private final GetToggleByNameUseCase getToggleByNameUseCase;
     private final ListTogglesUseCase listTogglesUseCase;
     private final UpdateToggleUseCase updateToggleUseCase;
     private final CreateToggleCommandMapper createMapper;
@@ -30,12 +32,14 @@ public class ToggleController {
     private int maxPageSize;
 
     public ToggleController(CreateToggleUseCase createToggleUseCase,
+                            GetToggleByNameUseCase getToggleByNameUseCase,
                             ListTogglesUseCase listTogglesUseCase,
                             UpdateToggleUseCase updateToggleUseCase,
                             CreateToggleCommandMapper createMapper,
                             UpdateToggleCommandMapper updateMapper,
                             TogglePaginationLinkBuilder linkBuilder) {
         this.createToggleUseCase = createToggleUseCase;
+        this.getToggleByNameUseCase = getToggleByNameUseCase;
         this.listTogglesUseCase = listTogglesUseCase;
         this.updateToggleUseCase = updateToggleUseCase;
         this.createMapper = createMapper;
@@ -47,6 +51,11 @@ public class ToggleController {
     @ResponseStatus(HttpStatus.CREATED)
     public ToggleResponse create(@Valid @RequestBody CreateToggleRequest request) {
         return ToggleResponse.from(createToggleUseCase.execute(createMapper.toCommand(request)));
+    }
+
+    @GetMapping("/{name}")
+    public ToggleResponse getByName(@PathVariable String name) {
+        return ToggleResponse.from(getToggleByNameUseCase.execute(name));
     }
 
     @GetMapping

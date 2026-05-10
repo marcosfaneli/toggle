@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class TogglePersistenceAdapter {
@@ -106,6 +107,11 @@ public class TogglePersistenceAdapter {
     public java.util.Optional<ToggleInternalId> findToggleInternalId(String name) {
         return repository.findByName(name)
                 .map(e -> new ToggleInternalId(e.getId(), toDomain(e)));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Toggle> findByName(String name) {
+        return repository.findByName(name).map(this::toDomain);
     }
 
     public record ToggleInternalId(Long id, Toggle toggle) {}
