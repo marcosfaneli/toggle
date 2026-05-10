@@ -22,8 +22,15 @@ public class DeliveryEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onToggleUpdated(ToggleUpdatedEvent event) {
-        log.info("event=toggle_delivery_event_received toggleName={} targetVersion={}", 
-                event.toggleName(), event.targetVersion());
-        useCase.execute(event);
+        try {
+            log.info("event=toggle_delivery_event_received toggleName={} targetVersion={}", 
+                    event.toggleName(), event.targetVersion());
+            useCase.execute(event);
+            log.info("event=toggle_delivery_event_completed toggleName={} targetVersion={}",
+                    event.toggleName(), event.targetVersion());
+        } catch (Exception ex) {
+            log.error("event=toggle_delivery_event_failed toggleName={} targetVersion={} error={}",
+                    event.toggleName(), event.targetVersion(), ex.getMessage(), ex);
+        }
     }
 }

@@ -18,6 +18,7 @@ public class UpdateToggleUseCase {
         this.eventPublisher = eventPublisher;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public Toggle execute(UpdateToggleCommand command) {
         Toggle toggle = persistenceAdapter.update(command);
         eventPublisher.publishEvent(
