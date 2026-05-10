@@ -11,9 +11,12 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+        format_sql: true
+        use_sql_comments: true
+        dialect: org.hibernate.dialect.MySQLDialect
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: false
     open-in-view: false
   jackson:
     time-zone: UTC
@@ -34,3 +37,11 @@ toggle:
     expiration-check-interval-ms: 60000
   delivery:
     timeout-ms: 3000
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.orm.jpa: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
