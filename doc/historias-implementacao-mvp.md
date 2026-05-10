@@ -362,7 +362,7 @@ Criterios de aceite:
 5. H4 - Atualizar toggle ✅
 6. H5 - Registro de instancia ✅
 6. H6 - Heartbeat ✅
-7. H7 - Entrega via PUT + sync state
+7. H7 - Entrega via PUT + sync state ✅
 8. H8 - Historico de entrega
 9. H9 - Runtime da lib-client
 

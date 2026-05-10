@@ -1,0 +1,31 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: checkout-service
+  devtools:
+    restart:
+      enabled: true
+
+feature:
+  toggles:
+    service-name: checkout-service
+    instance-id: checkout-local-1
+    pod-name: checkout-local-1
+    namespace: local
+    server-base-url: http://localhost:8080
+    callback-base-url: http://localhost:8082
+    callback-path: /internal/feature-toggles
+    heartbeat-interval-ms: 5000
+    consumed:
+      novo-checkout: LOCAL_CACHE
+      pagamento-v2: REMOTE_ALWAYS
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.orm.jpa: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
