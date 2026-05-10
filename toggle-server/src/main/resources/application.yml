@@ -38,10 +38,10 @@ toggle:
   delivery:
     timeout-ms: 3000
 
-logging:
-  level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.springframework.orm.jpa: DEBUG
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+# logging:
+#   level:
+#     org.hibernate.SQL: DEBUG
+#     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+#     org.springframework.orm.jpa: DEBUG
+#   pattern:
+#     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

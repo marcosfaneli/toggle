@@ -5,6 +5,7 @@ import com.toggle.server.toggle.domain.Toggle;
 import com.toggle.server.toggle.persistence.TogglePersistenceAdapter;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UpdateToggleUseCase {
@@ -18,7 +19,7 @@ public class UpdateToggleUseCase {
         this.eventPublisher = eventPublisher;
     }
 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public Toggle execute(UpdateToggleCommand command) {
         Toggle toggle = persistenceAdapter.update(command);
         eventPublisher.publishEvent(
