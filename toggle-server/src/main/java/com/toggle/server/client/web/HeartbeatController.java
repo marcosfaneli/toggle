@@ -27,10 +27,10 @@ public class HeartbeatController {
     @PostMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void heartbeat(@Valid @RequestBody HeartbeatRequest request) {
-        log.info(
+        log.debug(
                 "event=client_heartbeat_requested serviceName={} instanceId={}",
                 request.serviceName(),
                 request.instanceId());
-        heartbeatUseCase.execute(new HeartbeatCommand(request.serviceName(), request.instanceId()));
+        heartbeatUseCase.execute(new HeartbeatCommand(request.serviceName(), request.instanceId()))
     }
 }
