@@ -68,6 +68,32 @@ Content-Type: application/json
 
 `value` is omitted from the response when the toggle has no value.
 
+### Update a toggle
+
+```http
+PATCH /toggles/{name}
+Content-Type: application/json
+
+{
+  "ownerServiceName": "order-service",
+  "enabled": false,
+  "value": {
+    "type": "NUMBER",
+    "raw": "10"
+  }
+}
+```
+
+`ownerServiceName` belongs to the request body (not query params).
+
+- Omit `value` to keep the current value unchanged.
+- Send `"value": null` to remove the current value.
+- `ownerServiceName` can be omitted when the toggle name is unique across services.
+
+**200 OK**
+
+Returns the updated toggle.
+
 **Errors** follow [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) (`application/problem+json`):
 
 | Status | Cause |
