@@ -7,11 +7,15 @@ import jakarta.validation.constraints.Pattern;
 
 public class UpdateToggleRequest {
 
+    private String ownerServiceName;
     private Boolean enabled;
 
     @Valid
     private ValueRequest value;
     private boolean valueExplicitlySet = false;
+
+    public String getOwnerServiceName() { return ownerServiceName; }
+    public void setOwnerServiceName(String ownerServiceName) { this.ownerServiceName = ownerServiceName; }
 
     public Boolean getEnabled() { return enabled; }
     public void setEnabled(Boolean enabled) { this.enabled = enabled; }

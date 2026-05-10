@@ -71,11 +71,10 @@ public class ToggleController {
     @PatchMapping("/{name}")
     public ResponseEntity<ToggleResponse> update(
             @PathVariable String name,
-            @RequestParam String ownerServiceName,
             @Valid @RequestBody UpdateToggleRequest request) {
 
         return ResponseEntity.ok(
                 ToggleResponse.from(updateToggleUseCase.execute(
-                        updateMapper.toCommand(name, ownerServiceName, request))));
+                updateMapper.toCommand(name, request))));
     }
 }

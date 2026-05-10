@@ -150,7 +150,7 @@ class ToggleControllerTest {
         var request = new CreateToggleRequest("novo-checkout", "checkout-service", true, null);
 
         when(createToggleUseCase.execute(any(CreateToggleCommand.class)))
-                .thenThrow(new ToggleAlreadyExistsException("novo-checkout", "checkout-service"));
+                .thenThrow(new ToggleAlreadyExistsException("novo-checkout"));
 
         var body = Objects.requireNonNull(objectMapper.writeValueAsString(request));
 
@@ -305,9 +305,8 @@ class ToggleControllerTest {
         when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
 
         mockMvc.perform(patch("/toggles/novo-checkout")
-                .param("ownerServiceName", "checkout-service")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
-                .content("{\"enabled\":false}"))
+                                .content("{\"ownerServiceName\":\"checkout-service\",\"enabled\":false}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.enabled").value(false))
                 .andExpect(jsonPath("$.version").value(2));
@@ -320,9 +319,8 @@ class ToggleControllerTest {
         when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
 
         mockMvc.perform(patch("/toggles/limite")
-                .param("ownerServiceName", "api-gateway")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
-                .content("{\"value\":{\"type\":\"NUMBER\",\"raw\":\"99\"}}"))
+                .content("{\"ownerServiceName\":\"api-gateway\",\"value\":{\"type\":\"NUMBER\",\"raw\":\"99\"}}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.value.type").value("NUMBER"))
                 .andExpect(jsonPath("$.value.raw").value("99"));
@@ -334,9 +332,8 @@ class ToggleControllerTest {
         when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
 
         mockMvc.perform(patch("/toggles/novo-checkout")
-                .param("ownerServiceName", "checkout-service")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
-                .content("{\"value\":null}"))
+                .content("{\"ownerServiceName\":\"checkout-service\",\"value\":null}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.value").doesNotExist());
     }
@@ -348,23 +345,34 @@ class ToggleControllerTest {
         when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
 
         mockMvc.perform(patch("/toggles/novo-checkout")
-                .param("ownerServiceName", "checkout-service")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
-                .content("{\"enabled\":false}"))
+                .content("{\"ownerServiceName\":\"checkout-service\",\"enabled\":false}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.value.type").value("STRING"))
                 .andExpect(jsonPath("$.value.raw").value("enabled"));
     }
 
+        @Test
+        void shouldUpdateWithoutOwnerServiceNameAndReturn200() throws Exception {
+                var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", false, 2L, Instant.now(), null);
+                when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
+
+                mockMvc.perform(patch("/toggles/novo-checkout")
+                                .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
+                                .content("{\"enabled\":false}"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.enabled").value(false))
+                                .andExpect(jsonPath("$.version").value(2));
+        }
+
     @Test
     void shouldReturn404WhenToggleNotFound() throws Exception {
         when(updateToggleUseCase.execute(any(UpdateToggleCommand.class)))
-                .thenThrow(new ToggleNotFoundException("inexistente", "checkout-service"));
+                                .thenThrow(new ToggleNotFoundException("inexistente"));
 
         mockMvc.perform(patch("/toggles/inexistente")
-                .param("ownerServiceName", "checkout-service")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
-                .content("{\"enabled\":true}"))
+                .content("{\"ownerServiceName\":\"checkout-service\",\"enabled\":true}"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
                 .andExpect(jsonPath("$.status").value(404))
@@ -375,9 +383,8 @@ class ToggleControllerTest {
     @Test
     void shouldReturn400WhenPatchValueTypeIsInvalid() throws Exception {
         mockMvc.perform(patch("/toggles/novo-checkout")
-                .param("ownerServiceName", "checkout-service")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
-                .content("{\"value\":{\"type\":\"BOOLEAN\",\"raw\":\"true\"}}"))
+                                .content("{\"ownerServiceName\":\"checkout-service\",\"value\":{\"type\":\"BOOLEAN\",\"raw\":\"true\"}}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
                 .andExpect(jsonPath("$.status").value(400))

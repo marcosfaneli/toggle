@@ -64,14 +64,14 @@ public class TogglePersistenceAdapter {
         try {
             return toDomain(repository.save(entity));
         } catch (DataIntegrityViolationException exception) {
-            throw new ToggleAlreadyExistsException(command.name(), command.ownerServiceName());
+            throw new ToggleAlreadyExistsException(command.name());
         }
     }
 
     @Transactional
     public Toggle update(UpdateToggleCommand command) {
-        var entity = repository.findByNameAndOwnerServiceName(command.name(), command.ownerServiceName())
-                .orElseThrow(() -> new ToggleNotFoundException(command.name(), command.ownerServiceName()));
+        var entity = repository.findByName(command.name())
+                .orElseThrow(() -> new ToggleNotFoundException(command.name()));
 
         if (command.enabled() != null) {
             entity.setEnabled(command.enabled());
@@ -104,7 +104,7 @@ public class TogglePersistenceAdapter {
 
     @Transactional(readOnly = true)
     public java.util.Optional<ToggleInternalId> findToggleInternalId(String name, String ownerServiceName) {
-        return repository.findByNameAndOwnerServiceName(name, ownerServiceName)
+        return repository.findByName(name)
                 .map(e -> new ToggleInternalId(e.getId(), toDomain(e)));
     }
 

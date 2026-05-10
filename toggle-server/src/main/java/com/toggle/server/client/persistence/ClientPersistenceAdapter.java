@@ -6,6 +6,7 @@ import com.toggle.server.client.domain.ClientInstanceInactiveException;
 import com.toggle.server.client.domain.ClientInstanceNotFoundException;
 import com.toggle.server.client.domain.ClientInstanceStatus;
 import com.toggle.server.client.domain.ClientSubscription;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,9 +35,7 @@ public class ClientPersistenceAdapter {
                 instance.serviceName(), instance.instanceId())
                 .orElseGet(ClientInstanceEntity::new);
 
-        boolean isNew = entity.getId() == null;
-
-        if (isNew) {
+        if (entity.getId() == null) {
             entity.setPublicId(UlidCreator.getMonotonicUlid().toString());
             entity.setRegisteredAt(Instant.now(clock));
         }
@@ -48,11 +47,9 @@ public class ClientPersistenceAdapter {
         entity.setCallbackUrl(instance.callbackUrl());
         entity.setStatus(ClientInstanceStatus.ACTIVE.name());
 
-        var saved = instanceRepository.save(entity);
+        var saved = saveInstanceResilient(instance, entity);
 
-        if (!isNew) {
-            subscriptionRepository.deleteAllByClientInstanceId(saved.getId());
-        }
+        subscriptionRepository.deleteAllByClientInstanceId(saved.getId());
 
         for (var subscription : subscriptions) {
             var subEntity = new ClientSubscriptionEntity();
@@ -65,6 +62,27 @@ public class ClientPersistenceAdapter {
         }
 
         return toDomain(saved);
+    }
+
+    private ClientInstanceEntity saveInstanceResilient(ClientInstance instance, ClientInstanceEntity entity) {
+        try {
+            return instanceRepository.save(entity);
+        } catch (DataIntegrityViolationException ex) {
+            // Handles concurrent register requests for the same serviceName+instanceId.
+            var existing = instanceRepository.findByServiceNameAndInstanceId(
+                    instance.serviceName(), instance.instanceId());
+
+            if (existing.isEmpty()) {
+                throw ex;
+            }
+
+            var recovered = existing.get();
+            recovered.setPodName(instance.podName());
+            recovered.setNamespace(instance.namespace());
+            recovered.setCallbackUrl(instance.callbackUrl());
+            recovered.setStatus(ClientInstanceStatus.ACTIVE.name());
+            return instanceRepository.save(recovered);
+        }
     }
 
     @Transactional
