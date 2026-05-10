@@ -43,6 +43,8 @@ public class DeliverToggleUpdateUseCase {
         Toggle toggle = toggleWithId.toggle();
 
         var subscribers = clientAdapter.findActiveSubscribersForToggle(event.toggleName());
+        log.info("event=toggle_delivery_started toggleName={} version={} subscribersCount={}",
+                event.toggleName(), event.targetVersion(), subscribers.size());
         if (subscribers.isEmpty()) {
             return;
         }
@@ -58,9 +60,13 @@ public class DeliverToggleUpdateUseCase {
 
             if (delivered) {
                 deliveryAdapter.markSynced(syncStateId, event.targetVersion());
+                log.info("event=toggle_delivery_success toggleName={} version={} clientInstanceId={}",
+                        event.toggleName(), event.targetVersion(), subscriber.clientInstanceId());
             } else {
                 deliveryAdapter.markOutOfSync(syncStateId,
                         "HTTP PUT failed for callback: " + subscriber.callbackUrl());
+                log.warn("event=toggle_delivery_failed toggleName={} version={} clientInstanceId={} reason=http_error",
+                        event.toggleName(), event.targetVersion(), subscriber.clientInstanceId());
             }
         }
     }

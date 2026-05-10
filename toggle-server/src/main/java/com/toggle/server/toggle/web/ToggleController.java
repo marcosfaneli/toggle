@@ -7,6 +7,8 @@ import com.toggle.server.toggle.application.ListTogglesUseCase;
 import com.toggle.server.toggle.application.UpdateToggleUseCase;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -19,6 +21,8 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequestMapping("/toggles")
 public class ToggleController {
+
+    private static final Logger log = LoggerFactory.getLogger(ToggleController.class);
 
     private final CreateToggleUseCase createToggleUseCase;
     private final GetToggleByNameUseCase getToggleByNameUseCase;
@@ -81,7 +85,11 @@ public class ToggleController {
     public ResponseEntity<ToggleResponse> update(
             @PathVariable String name,
             @Valid @RequestBody UpdateToggleRequest request) {
-
+        log.info(
+                "event=toggle_update_requested name={} enabled={} hasValue={}",
+                name,
+                request.getEnabled(),
+                request.getValue() != null);
         return ResponseEntity.ok(
                 ToggleResponse.from(updateToggleUseCase.execute(
                 updateMapper.toCommand(name, request))));

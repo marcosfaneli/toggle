@@ -8,6 +8,8 @@ import com.toggle.server.toggle.domain.ToggleAlreadyExistsException;
 import com.toggle.server.toggle.domain.ToggleNotFoundException;
 import com.toggle.server.toggle.domain.ToggleValue;
 import com.toggle.server.toggle.domain.ValueType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -21,6 +23,8 @@ import java.util.Optional;
 
 @Component
 public class TogglePersistenceAdapter {
+
+    private static final Logger log = LoggerFactory.getLogger(TogglePersistenceAdapter.class);
 
     private final ToggleRepository repository;
     private final Clock clock;
@@ -72,7 +76,10 @@ public class TogglePersistenceAdapter {
     @Transactional
     public Toggle update(UpdateToggleCommand command) {
         var entity = repository.findByName(command.name())
-                .orElseThrow(() -> new ToggleNotFoundException(command.name()));
+                .orElseThrow(() -> {
+                    log.info("event=toggle_update_rejected name={} reason=not_found", command.name());
+                    return new ToggleNotFoundException(command.name());
+                });
 
         if (command.enabled() != null) {
             entity.setEnabled(command.enabled());
@@ -100,7 +107,14 @@ public class TogglePersistenceAdapter {
         entity.setVersion(entity.getVersion() + 1);
         entity.setUpdatedAt(Instant.now(clock));
 
-        return toDomain(repository.save(entity));
+        var saved = toDomain(repository.save(entity));
+        log.info(
+                "event=toggle_updated name={} version={} enabled={} hasValue={}",
+                saved.name(),
+                saved.version(),
+                saved.enabled(),
+                saved.value() != null);
+        return saved;
     }
 
     @Transactional(readOnly = true)
