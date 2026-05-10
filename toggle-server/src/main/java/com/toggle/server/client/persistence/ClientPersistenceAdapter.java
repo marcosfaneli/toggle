@@ -108,17 +108,41 @@ public class ClientPersistenceAdapter {
 
     @Transactional
     public void heartbeat(String serviceName, String instanceId) {
-        var entity = instanceRepository.findByServiceNameAndInstanceId(serviceName, instanceId)
-                .orElseThrow(() -> new ClientInstanceNotFoundException(serviceName, instanceId));
+        var found = instanceRepository.findByServiceNameAndInstanceId(serviceName, instanceId);
+        if (found.isEmpty()) {
+            log.info(
+                    "event=client_heartbeat_rejected serviceName={} instanceId={} reason=not_found",
+                    serviceName,
+                    instanceId);
+            throw new ClientInstanceNotFoundException(serviceName, instanceId);
+        }
+
+        var entity = found.get();
 
         if (ClientInstanceStatus.INACTIVE.name().equals(entity.getStatus())) {
+            log.info(
+                    "event=client_heartbeat_rejected serviceName={} instanceId={} publicId={} namespace={} podName={} reason=inactive",
+                    entity.getServiceName(),
+                    entity.getInstanceId(),
+                    entity.getPublicId(),
+                    entity.getNamespace(),
+                    entity.getPodName());
             throw new ClientInstanceInactiveException(serviceName, instanceId);
         }
 
         var now = Instant.now(clock);
         entity.setLastHeartbeatAt(now);
         entity.setLastSeenAt(now);
-        instanceRepository.save(entity);
+        var saved = instanceRepository.save(entity);
+
+        log.info(
+                "event=client_heartbeat_accepted serviceName={} instanceId={} publicId={} namespace={} podName={} lastHeartbeatAt={}",
+                saved.getServiceName(),
+                saved.getInstanceId(),
+                saved.getPublicId(),
+                saved.getNamespace(),
+                saved.getPodName(),
+                saved.getLastHeartbeatAt());
     }
 
     @Transactional
