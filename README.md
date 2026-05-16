@@ -2,12 +2,12 @@
 
 ![Switchboard](./switchboard-icon.svg)
 
-Feature Toggle Server — manage boolean feature flags across your microservices.
+Feature Toggle Server - manage boolean feature flags across your microservices.
 
 ## Stack
 
-- Java 21 · Spring Boot 3.4.4 · Undertow
-- MySQL 8 · Flyway · Spring Data JPA
+- Java 25 · Spring Boot 3.5.14 · Undertow
+- MySQL 8.4 · Flyway · Spring Data JPA
 - ULID public IDs · RFC 7807 error responses
 
 ## Running locally
@@ -22,7 +22,7 @@ docker compose up -d
 
 ```bash
 cd toggle-server
-./mvnw spring-boot:run
+mvn spring-boot:run
 ```
 
 Server runs on `http://localhost:8080`.  
@@ -105,7 +105,7 @@ Returns the updated toggle.
 
 ```bash
 cd toggle-server
-./mvnw test
+mvn test
 ```
 
 ## Importing the API collection
