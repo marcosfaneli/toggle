@@ -2,9 +2,9 @@ spring:
   application:
     name: toggle-server
   datasource:
-    url: jdbc:mysql://localhost:3306/toggle_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: toggle
-    password: toggle
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:toggle_db}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:toggle}
+    password: ${DB_PASSWORD:toggle}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     properties:

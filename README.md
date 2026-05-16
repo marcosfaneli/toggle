@@ -28,6 +28,18 @@ mvn spring-boot:run
 Server runs on `http://localhost:8080`.  
 Adminer (DB admin) on `http://localhost:8081`.
 
+The server reads the database connection from environment variables, with local defaults:
+
+| Variable | Default |
+|----------|---------|
+| `DB_HOST` | `localhost` |
+| `DB_PORT` | `3306` |
+| `DB_NAME` | `toggle_db` |
+| `DB_USERNAME` | `toggle` |
+| `DB_PASSWORD` | `toggle` |
+
+When running the server container on the same Docker Compose network as MySQL, set `DB_HOST=mysql`.
+
 ## API
 
 ### Create a toggle
