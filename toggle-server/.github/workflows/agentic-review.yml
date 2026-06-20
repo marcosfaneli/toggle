@@ -1,0 +1,141 @@
+name: Agentic Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  agentic-review:
+    name: Agentic review checks
+    if: ${{ github.event.pull_request.draft == false }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Build, test and coverage gate
+        run: mvn -B clean verify
+
+      - name: Enforce docs update when src changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BASE_REF="origin/${{ github.base_ref }}"
+          git fetch --no-tags --prune --depth=1 origin "${{ github.base_ref }}"
+
+          changed_files="$(git diff --name-only "${BASE_REF}"...HEAD)"
+
+          if [[ -z "${changed_files}" ]]; then
+            echo "No changed files detected."
+            exit 0
+          fi
+
+          behavior_changed="false"
+          test_changed="false"
+          docs_changed="false"
+
+          while IFS= read -r file; do
+            [[ -z "${file}" ]] && continue
+
+            if [[ "${file}" == src/main/java/* ]]; then
+              behavior_changed="true"
+            fi
+
+            if [[ "${file}" == src/test/* ]]; then
+              test_changed="true"
+            fi
+
+            if [[ "${file}" == src/main/resources/application.yml || "${file}" == src/main/resources/application-dev.yml ]]; then
+              behavior_changed="true"
+            fi
+
+            if [[ "${file}" == src/main/resources/db/migration/*.sql ]]; then
+              behavior_changed="true"
+            fi
+
+            if [[ "${file}" == docs/* || "${file}" == README.md || "${file}" == CONTRIBUTING.md || "${file}" == AGENTS.md || "${file}" == .instructions.md || "${file}" == .github/copilot-instructions.md ]]; then
+              docs_changed="true"
+            fi
+          done <<< "${changed_files}"
+
+          if [[ "${behavior_changed}" == "true" && "${docs_changed}" == "false" ]]; then
+            echo "Behavior-impacting files changed without any documentation update."
+            echo "Update at least one of: docs/*, README.md, CONTRIBUTING.md, AGENTS.md, .instructions.md, .github/copilot-instructions.md"
+            exit 1
+          fi
+
+          if [[ "${test_changed}" == "true" && "${behavior_changed}" == "false" && "${docs_changed}" == "false" ]]; then
+            echo "Only test files changed. Documentation update is optional for this PR."
+          fi
+
+          echo "Documentation check passed."
+
+      - name: Enforce pull request template sections
+        shell: bash
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${PR_BODY}" ]]; then
+            echo "Pull request body is empty. Please fill the PR template."
+            exit 1
+          fi
+
+          required_sections=(
+            "## Resumo"
+            "## Tipo de mudanca"
+            "## Checklist tecnico"
+            "## Testes"
+            "## Evidencias"
+            "## Documentacao"
+            "## Riscos e rollback"
+          )
+
+          missing="false"
+          for section in "${required_sections[@]}"; do
+            if ! grep -Fq "${section}" <<< "${PR_BODY}"; then
+              echo "Missing required PR section: ${section}"
+              missing="true"
+            fi
+          done
+
+          if [[ "${missing}" == "true" ]]; then
+            echo "Please use .github/PULL_REQUEST_TEMPLATE.md and keep all required sections."
+            exit 1
+          fi
+
+          echo "PR template sections check passed."
+
+      - name: Enforce immutable Flyway migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BASE_REF="origin/${{ github.base_ref }}"
+          git fetch --no-tags --prune --depth=1 origin "${{ github.base_ref }}"
+
+          modified_existing_migrations="$(git diff --name-status "${BASE_REF}"...HEAD | awk '$1 == "M" && $2 ~ /^src\/main\/resources\/db\/migration\/V[0-9]+__.*\.sql$/ { print $2 }')"
+
+          if [[ -n "${modified_existing_migrations}" ]]; then
+            echo "Existing Flyway migration files were modified. This is not allowed:"
+            echo "${modified_existing_migrations}"
+            echo "Create a new migration version instead of editing an existing one."
+            exit 1
+          fi
+
+          echo "Flyway migration immutability check passed."

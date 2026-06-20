@@ -18,3 +18,10 @@
 - [ ] Sem quebra de contrato de API
 - [ ] Migração de banco incluída quando necessário
 - [ ] Logs relevantes mantidos para troubleshooting
+
+## Guias para contribuicao com IA
+- `AGENTS.md`
+- `.github/copilot-instructions.md`
+- `docs/ARCHITECTURE.md`
+- `docs/CODE_PATTERNS.md`
+- `docs/TESTING.md`

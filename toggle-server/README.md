@@ -65,3 +65,12 @@ Nunca altere migrações já aplicadas; crie sempre uma nova versão.
 
 ## CI
 Pipeline em `.github/workflows/build.yml` roda `mvn clean verify` para push e pull request.
+
+## Agentic coding
+Documentos principais para contribuicao assistida por IA:
+- `AGENTS.md`
+- `.github/copilot-instructions.md`
+- `.instructions.md`
+- `docs/ARCHITECTURE.md`
+- `docs/CODE_PATTERNS.md`
+- `docs/TESTING.md`
