@@ -7,10 +7,13 @@ import com.toggle.server.toggle.application.ListTogglesUseCase;
 import com.toggle.server.toggle.application.UpdateToggleUseCase;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -23,6 +26,8 @@ import org.springframework.web.server.ResponseStatusException;
 public class ToggleController {
 
     private static final Logger log = LoggerFactory.getLogger(ToggleController.class);
+    private static final String SORT_PROPERTY_UPDATED_AT = "updatedAt";
+    private static final String SORT_ALIAS_CREATED_AT = "createdAt";
 
     private final CreateToggleUseCase createToggleUseCase;
     private final GetToggleByNameUseCase getToggleByNameUseCase;
@@ -66,19 +71,36 @@ public class ToggleController {
     public ResponseEntity<PagedToggleResponse> list(
             @RequestParam(required = false) String ownerServiceName,
             @RequestParam(required = false) Boolean enabled,
-            @PageableDefault(size = 20) Pageable pageable,
+            @ParameterObject
+            @PageableDefault(size = 20, sort = SORT_PROPERTY_UPDATED_AT, direction = Sort.Direction.DESC) Pageable pageable,
             HttpServletRequest request) {
 
-        if (pageable.getPageSize() > maxPageSize) {
+        var normalizedPageable = normalizeSortAliases(pageable);
+
+        if (normalizedPageable.getPageSize() > maxPageSize) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "size must be <= " + maxPageSize);
         }
 
-        var slice = listTogglesUseCase.execute(new ListTogglesQuery(ownerServiceName, enabled), pageable);
-        var links = linkBuilder.buildLinks(request, ownerServiceName, enabled, slice, pageable);
+        var slice = listTogglesUseCase.execute(new ListTogglesQuery(ownerServiceName, enabled), normalizedPageable);
+        var links = linkBuilder.buildLinks(request, ownerServiceName, enabled, slice, normalizedPageable);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.LINK, String.join(", ", links))
                 .body(PagedToggleResponse.from(slice));
+    }
+
+    private Pageable normalizeSortAliases(Pageable pageable) {
+        if (pageable.getSort().isUnsorted()) {
+            return pageable;
+        }
+
+        var mappedOrders = pageable.getSort().stream()
+                .map(order -> SORT_ALIAS_CREATED_AT.equals(order.getProperty())
+                        ? new Sort.Order(order.getDirection(), SORT_PROPERTY_UPDATED_AT)
+                        : order)
+                .toList();
+
+        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(mappedOrders));
     }
 
     @PatchMapping("/{name}")

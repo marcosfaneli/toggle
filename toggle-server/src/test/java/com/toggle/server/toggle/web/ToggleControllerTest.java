@@ -21,6 +21,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.http.MediaType;
@@ -32,7 +33,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import org.mockito.ArgumentCaptor;
+
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -294,7 +298,7 @@ class ToggleControllerTest {
     @Test
         void shouldReturnPagedTogglesWhenOwnerServiceNameIsMissing() throws Exception {
                 var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", true, 1L, Instant.now(), null);
-                var pageable = PageRequest.of(0, 20);
+                                var pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "updatedAt"));
                 var slice = newSlice(pageable, false, toggle);
 
                 when(listTogglesUseCase.execute(any(ListTogglesQuery.class), any(Pageable.class))).thenReturn(slice);
@@ -303,6 +307,47 @@ class ToggleControllerTest {
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.content[0].name").value("novo-checkout"))
                                 .andExpect(header().string("Link", Objects.requireNonNull(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("ownerServiceName=")))));
+
+                var queryCaptor = ArgumentCaptor.forClass(ListTogglesQuery.class);
+                var pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+
+                verify(listTogglesUseCase).execute(queryCaptor.capture(), pageableCaptor.capture());
+
+                var capturedQuery = queryCaptor.getValue();
+                var capturedPageable = pageableCaptor.getValue();
+
+                org.junit.jupiter.api.Assertions.assertNull(capturedQuery.ownerServiceName());
+                org.junit.jupiter.api.Assertions.assertNull(capturedQuery.enabled());
+                org.junit.jupiter.api.Assertions.assertEquals(0, capturedPageable.getPageNumber());
+                org.junit.jupiter.api.Assertions.assertEquals(20, capturedPageable.getPageSize());
+                var updatedAtOrder = capturedPageable.getSort().getOrderFor("updatedAt");
+                org.junit.jupiter.api.Assertions.assertNotNull(updatedAtOrder);
+                org.junit.jupiter.api.Assertions.assertEquals(
+                        Sort.Direction.DESC,
+                        updatedAtOrder.getDirection());
+    }
+
+    @Test
+    void shouldMapCreatedAtSortAliasToUpdatedAt() throws Exception {
+        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", true, 1L, Instant.now(), null);
+        var pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "updatedAt"));
+        var slice = newSlice(pageable, false, toggle);
+
+        when(listTogglesUseCase.execute(any(ListTogglesQuery.class), any(Pageable.class))).thenReturn(slice);
+
+        mockMvc.perform(get("/toggles")
+                        .param("sort", "createdAt,DESC"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].name").value("novo-checkout"));
+
+        var pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(listTogglesUseCase).execute(any(ListTogglesQuery.class), pageableCaptor.capture());
+
+        var capturedPageable = pageableCaptor.getValue();
+        var updatedAtOrder = capturedPageable.getSort().getOrderFor("updatedAt");
+        org.junit.jupiter.api.Assertions.assertNotNull(updatedAtOrder);
+        org.junit.jupiter.api.Assertions.assertEquals(Sort.Direction.DESC, updatedAtOrder.getDirection());
+        org.junit.jupiter.api.Assertions.assertNull(capturedPageable.getSort().getOrderFor("createdAt"));
     }
 
         @Test
