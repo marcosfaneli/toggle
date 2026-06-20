@@ -2,6 +2,7 @@ package com.toggle.server.shared.web;
 
 import com.toggle.server.client.domain.ClientInstanceInactiveException;
 import com.toggle.server.client.domain.ClientInstanceNotFoundException;
+import com.toggle.server.client.domain.InvalidCallbackUrlException;
 import com.toggle.server.client.domain.InvalidToggleSubscriptionException;
 import com.toggle.server.toggle.domain.ToggleAlreadyExistsException;
 import com.toggle.server.toggle.domain.ToggleNotFoundException;
@@ -35,6 +36,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidToggleSubscriptionException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ProblemDetail handleInvalidToggleSubscription(InvalidToggleSubscriptionException exception) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+    @ExceptionHandler(InvalidCallbackUrlException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ProblemDetail handleInvalidCallbackUrl(InvalidCallbackUrlException exception) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 

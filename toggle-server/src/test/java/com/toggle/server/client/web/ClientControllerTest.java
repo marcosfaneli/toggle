@@ -6,6 +6,7 @@ import com.toggle.server.client.application.RegisterClientUseCase;
 import com.toggle.server.client.domain.ClientInstance;
 import com.toggle.server.client.domain.ClientInstanceNotFoundException;
 import com.toggle.server.client.domain.ClientInstanceStatus;
+import com.toggle.server.client.domain.InvalidCallbackUrlException;
 import com.toggle.server.client.domain.InvalidToggleSubscriptionException;
 import com.toggle.server.toggle.domain.Toggle;
 import com.toggle.server.toggle.domain.ToggleValue;
@@ -167,6 +168,33 @@ class ClientControllerTest {
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.detail").exists())
                 .andExpect(jsonPath("$.instance").exists());
+    }
+
+    @Test
+    void shouldReturn400WhenCallbackUrlIsInvalid() throws Exception {
+        when(registerClientUseCase.execute(any()))
+                .thenThrow(new InvalidCallbackUrlException("Callback URL has no host"));
+
+        var body = """
+                {
+                    "serviceName": "checkout-service",
+                    "instanceId": "checkout-7d8d4c7f6f-abcde",
+                    "podName": "checkout-7d8d4c7f6f-abcde",
+                    "namespace": "payments",
+                    "callbackUrl": "http:///invalid",
+                    "subscriptions": [
+                        { "toggleName": "novo-checkout", "consumeMode": "LOCAL_CACHE" }
+                    ]
+                }
+                """;
+
+        mockMvc.perform(post("/clients/register")
+                .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
+                .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.detail").value("Callback URL has no host"));
     }
 
     @Test
