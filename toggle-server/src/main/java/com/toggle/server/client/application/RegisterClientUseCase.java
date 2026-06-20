@@ -4,6 +4,7 @@ import com.toggle.server.client.domain.ClientInstance;
 import com.toggle.server.client.domain.ClientInstanceStatus;
 import com.toggle.server.client.domain.ClientSubscription;
 import com.toggle.server.client.domain.ConsumeMode;
+import com.toggle.server.client.domain.InvalidCallbackUrlException;
 import com.toggle.server.client.domain.InvalidToggleSubscriptionException;
 import com.toggle.server.client.persistence.ClientPersistenceAdapter;
 import com.toggle.server.toggle.persistence.TogglePersistenceAdapter;
@@ -11,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Set;
@@ -57,6 +60,10 @@ public class RegisterClientUseCase {
             throw new InvalidToggleSubscriptionException(unknownNames);
         }
 
+        if (command.callbackUrl() != null && !command.callbackUrl().isBlank()) {
+            validateCallbackUrl(command.callbackUrl());
+        }
+
         var instance = new ClientInstance(
                 null,
                 command.serviceName(),
@@ -87,5 +94,28 @@ public class RegisterClientUseCase {
                 saved.podName());
 
         return new RegisterClientResult(saved, foundToggles);
+    }
+
+    private void validateCallbackUrl(String callbackUrl) throws InvalidCallbackUrlException {
+        try {
+            URL url = new URL(callbackUrl);
+            String host = url.getHost();
+            
+            if (host == null || host.isEmpty()) {
+                throw new InvalidCallbackUrlException("Callback URL has no host");
+            }
+            
+            // Block internal/reserved addresses to prevent SSRF attacks
+            if (host.equals("localhost") ||
+                host.equals("127.0.0.1") ||
+                host.startsWith("169.254") ||    // AWS metadata
+                host.startsWith("192.168") ||    // Private network
+                host.startsWith("10.")) {        // Private network
+                throw new InvalidCallbackUrlException(
+                    "Callback URL points to reserved or internal network: " + host);
+            }
+        } catch (MalformedURLException e) {
+            throw new InvalidCallbackUrlException("Invalid callback URL format: " + e.getMessage());
+        }
     }
 }

@@ -89,6 +89,13 @@ public class ClientPersistenceAdapter {
         }
     }
 
+    @Transactional(readOnly = true)
+    public List<ClientInstance> findActiveInstancesForToggle(String toggleName) {
+        return instanceRepository.findActiveInstancesForToggle(toggleName, ClientInstanceStatus.ACTIVE.name()).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
     @Transactional
     public void deactivate(String serviceName, String instanceId) {
         var entity = instanceRepository.findByServiceNameAndInstanceId(serviceName, instanceId)
