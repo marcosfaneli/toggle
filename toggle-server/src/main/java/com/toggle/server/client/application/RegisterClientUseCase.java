@@ -10,10 +10,11 @@ import com.toggle.server.client.persistence.ClientPersistenceAdapter;
 import com.toggle.server.toggle.persistence.TogglePersistenceAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Set;
@@ -22,18 +23,21 @@ import java.util.stream.Collectors;
 @Service
 public class RegisterClientUseCase {
 
-        private static final Logger log = LoggerFactory.getLogger(RegisterClientUseCase.class);
+    private static final Logger log = LoggerFactory.getLogger(RegisterClientUseCase.class);
 
     private final ClientPersistenceAdapter clientPersistenceAdapter;
     private final TogglePersistenceAdapter togglePersistenceAdapter;
     private final Clock clock;
+    private final boolean allowLocalCallbacks;
 
     public RegisterClientUseCase(ClientPersistenceAdapter clientPersistenceAdapter,
                                  TogglePersistenceAdapter togglePersistenceAdapter,
-                                 Clock appClock) {
+                                 Clock appClock,
+                                 @Value("${toggle.security.allow-local-callbacks:false}") boolean allowLocalCallbacks) {
         this.clientPersistenceAdapter = clientPersistenceAdapter;
         this.togglePersistenceAdapter = togglePersistenceAdapter;
         this.clock = appClock;
+        this.allowLocalCallbacks = allowLocalCallbacks;
     }
 
     public RegisterClientResult execute(RegisterClientCommand command) {
@@ -60,9 +64,8 @@ public class RegisterClientUseCase {
             throw new InvalidToggleSubscriptionException(unknownNames);
         }
 
-        if (command.callbackUrl() != null && !command.callbackUrl().isBlank()) {
-            validateCallbackUrl(command.callbackUrl());
-        }
+        // Validate callback URL (including null/blank check)
+        validateCallbackUrl(command.callbackUrl());
 
         var instance = new ClientInstance(
                 null,
@@ -97,24 +100,30 @@ public class RegisterClientUseCase {
     }
 
     private void validateCallbackUrl(String callbackUrl) throws InvalidCallbackUrlException {
+        // Validate non-null and non-blank
+        if (callbackUrl == null || callbackUrl.isBlank()) {
+            throw new InvalidCallbackUrlException("Callback URL cannot be null or blank");
+        }
+
         try {
-            URL url = new URL(callbackUrl);
-            String host = url.getHost();
+            URI uri = new URI(callbackUrl);
+            String host = uri.getHost();
             
             if (host == null || host.isEmpty()) {
                 throw new InvalidCallbackUrlException("Callback URL has no host");
             }
             
-            // Block internal/reserved addresses to prevent SSRF attacks
-            if (host.equals("localhost") ||
+            // Block internal/reserved addresses to prevent SSRF attacks (unless explicitly allowed)
+            if (!allowLocalCallbacks && (
+                host.equals("localhost") ||
                 host.equals("127.0.0.1") ||
                 host.startsWith("169.254") ||    // AWS metadata
                 host.startsWith("192.168") ||    // Private network
-                host.startsWith("10.")) {        // Private network
+                host.startsWith("10."))) {       // Private network
                 throw new InvalidCallbackUrlException(
                     "Callback URL points to reserved or internal network: " + host);
             }
-        } catch (MalformedURLException e) {
+        } catch (URISyntaxException e) {
             throw new InvalidCallbackUrlException("Invalid callback URL format: " + e.getMessage());
         }
     }

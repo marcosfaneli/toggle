@@ -32,6 +32,8 @@ server:
 toggle:
   api:
     max-page-size: 100
+  security:
+    allow-local-callbacks: false
   heartbeat:
     expiration-timeout-minutes: 5
     expiration-check-interval-ms: 60000
