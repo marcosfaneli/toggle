@@ -27,6 +27,13 @@ export PATH=/home/faneli/.jdk/jdk-25.0.2/bin:$PATH
 mvn spring-boot:run
 ```
 
+## Documentacao da API
+
+Com a aplicacao em execucao, acesse:
+
+- Swagger UI: http://localhost:8080/swagger-ui/index.html
+- OpenAPI JSON: http://localhost:8080/v3/api-docs
+
 ## Build e testes
 
 ```bash
