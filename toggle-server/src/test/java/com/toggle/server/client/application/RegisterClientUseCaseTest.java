@@ -86,6 +86,66 @@ class RegisterClientUseCaseTest {
         verify(clientPersistenceAdapter, never()).upsert(any(), any());
     }
 
+    @Test
+    void execute_whenIpv6LoopbackAndNotAllowed_throwsInvalidCallbackUrl() {
+        var useCase = new RegisterClientUseCase(clientPersistenceAdapter, togglePersistenceAdapter, CLOCK, false);
+        var command = commandWithCallback("http://[::1]:8081/callback");
+
+        when(togglePersistenceAdapter.findAllByNames(List.of("novo-checkout")))
+                .thenReturn(List.of(aToggle("novo-checkout")));
+
+        assertThatThrownBy(() -> useCase.execute(command))
+                .isInstanceOf(InvalidCallbackUrlException.class)
+                .hasMessageContaining("reserved or internal network");
+
+        verify(clientPersistenceAdapter, never()).upsert(any(), any());
+    }
+
+    @Test
+    void execute_whenPrivateCgnatRangeAndNotAllowed_throwsInvalidCallbackUrl() {
+        var useCase = new RegisterClientUseCase(clientPersistenceAdapter, togglePersistenceAdapter, CLOCK, false);
+        var command = commandWithCallback("http://100.64.10.10:8081/callback");
+
+        when(togglePersistenceAdapter.findAllByNames(List.of("novo-checkout")))
+                .thenReturn(List.of(aToggle("novo-checkout")));
+
+        assertThatThrownBy(() -> useCase.execute(command))
+                .isInstanceOf(InvalidCallbackUrlException.class)
+                .hasMessageContaining("reserved or internal network");
+
+        verify(clientPersistenceAdapter, never()).upsert(any(), any());
+    }
+
+    @Test
+    void execute_whenCallbackUsesInvalidScheme_throwsInvalidCallbackUrl() {
+        var useCase = new RegisterClientUseCase(clientPersistenceAdapter, togglePersistenceAdapter, CLOCK, true);
+        var command = commandWithCallback("ftp://example.com/callback");
+
+        when(togglePersistenceAdapter.findAllByNames(List.of("novo-checkout")))
+                .thenReturn(List.of(aToggle("novo-checkout")));
+
+        assertThatThrownBy(() -> useCase.execute(command))
+                .isInstanceOf(InvalidCallbackUrlException.class)
+                .hasMessageContaining("must use http or https");
+
+        verify(clientPersistenceAdapter, never()).upsert(any(), any());
+    }
+
+    @Test
+    void execute_whenCallbackContainsUserInfo_throwsInvalidCallbackUrl() {
+        var useCase = new RegisterClientUseCase(clientPersistenceAdapter, togglePersistenceAdapter, CLOCK, true);
+        var command = commandWithCallback("http://user:pass@example.com/callback");
+
+        when(togglePersistenceAdapter.findAllByNames(List.of("novo-checkout")))
+                .thenReturn(List.of(aToggle("novo-checkout")));
+
+        assertThatThrownBy(() -> useCase.execute(command))
+                .isInstanceOf(InvalidCallbackUrlException.class)
+                .hasMessageContaining("must not contain user info");
+
+        verify(clientPersistenceAdapter, never()).upsert(any(), any());
+    }
+
     private RegisterClientCommand commandWithCallback(String callbackUrl) {
         return new RegisterClientCommand(
                 "checkout-service",

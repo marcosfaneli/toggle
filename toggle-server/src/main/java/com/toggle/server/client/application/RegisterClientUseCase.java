@@ -13,10 +13,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -65,7 +68,7 @@ public class RegisterClientUseCase {
         }
 
         // Validate callback URL (including null/blank check)
-        validateCallbackUrl(command.callbackUrl());
+        validateCallbackUrl(command.callbackUrl(), command.serviceName(), command.instanceId());
 
         var instance = new ClientInstance(
                 null,
@@ -99,32 +102,123 @@ public class RegisterClientUseCase {
         return new RegisterClientResult(saved, foundToggles);
     }
 
-    private void validateCallbackUrl(String callbackUrl) throws InvalidCallbackUrlException {
+    private void validateCallbackUrl(String callbackUrl, String serviceName, String instanceId)
+            throws InvalidCallbackUrlException {
         // Validate non-null and non-blank
         if (callbackUrl == null || callbackUrl.isBlank()) {
-            throw new InvalidCallbackUrlException("Callback URL cannot be null or blank");
+            throw rejectedCallback(serviceName, instanceId,
+                    "Callback URL cannot be null or blank", "n/a", "n/a");
         }
 
         try {
             URI uri = new URI(callbackUrl);
+            String scheme = uri.getScheme();
             String host = uri.getHost();
-            
-            if (host == null || host.isEmpty()) {
-                throw new InvalidCallbackUrlException("Callback URL has no host");
+
+            if (scheme == null ||
+                    !("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme))) {
+                throw rejectedCallback(serviceName, instanceId,
+                        "Callback URL must use http or https", hostOrUnknown(host), schemeOrUnknown(scheme));
             }
-            
+
+            if (uri.getUserInfo() != null) {
+                throw rejectedCallback(serviceName, instanceId,
+                        "Callback URL must not contain user info", hostOrUnknown(host), schemeOrUnknown(scheme));
+            }
+
+            if (uri.getFragment() != null) {
+                throw rejectedCallback(serviceName, instanceId,
+                        "Callback URL must not contain fragment", hostOrUnknown(host), schemeOrUnknown(scheme));
+            }
+
+            if (host == null || host.isEmpty()) {
+                throw rejectedCallback(serviceName, instanceId,
+                        "Callback URL has no host", "n/a", schemeOrUnknown(scheme));
+            }
+
             // Block internal/reserved addresses to prevent SSRF attacks (unless explicitly allowed)
-            if (!allowLocalCallbacks && (
-                host.equals("localhost") ||
-                host.equals("127.0.0.1") ||
-                host.startsWith("169.254") ||    // AWS metadata
-                host.startsWith("192.168") ||    // Private network
-                host.startsWith("10."))) {       // Private network
-                throw new InvalidCallbackUrlException(
-                    "Callback URL points to reserved or internal network: " + host);
+            if (!allowLocalCallbacks) {
+                var normalizedHost = host.toLowerCase(Locale.ROOT);
+                if (normalizedHost.equals("localhost") || normalizedHost.endsWith(".localhost")) {
+                    throw rejectedCallback(serviceName, instanceId,
+                            "Callback URL points to reserved or internal network: " + host,
+                            normalizedHost, schemeOrUnknown(scheme));
+                }
+
+                if (isIpLiteral(normalizedHost) && isReservedAddress(normalizedHost)) {
+                    throw rejectedCallback(serviceName, instanceId,
+                            "Callback URL points to reserved or internal network: " + host,
+                            normalizedHost, schemeOrUnknown(scheme));
+                }
             }
         } catch (URISyntaxException e) {
-            throw new InvalidCallbackUrlException("Invalid callback URL format: " + e.getMessage());
+            throw rejectedCallback(serviceName, instanceId,
+                    "Invalid callback URL format: " + e.getMessage(), "n/a", "n/a");
+        }
+    }
+
+    private InvalidCallbackUrlException rejectedCallback(String serviceName,
+                                                         String instanceId,
+                                                         String reason,
+                                                         String host,
+                                                         String scheme) {
+        log.warn(
+                "event=client_register_callback_rejected serviceName={} instanceId={} reason={} scheme={} host={} allowLocalCallbacks={}",
+                serviceName,
+                instanceId,
+                reason,
+                scheme,
+                host,
+                allowLocalCallbacks);
+        return new InvalidCallbackUrlException(reason);
+    }
+
+    private String schemeOrUnknown(String scheme) {
+        return scheme == null || scheme.isBlank() ? "unknown" : scheme;
+    }
+
+    private String hostOrUnknown(String host) {
+        return host == null || host.isBlank() ? "unknown" : host;
+    }
+
+    private boolean isIpLiteral(String host) {
+        if (host.contains(":")) {
+            return true;
+        }
+
+        // Fast IPv4 literal check to avoid DNS lookups for hostnames.
+        return host.matches("^(?:\\d{1,3}\\.){3}\\d{1,3}$");
+    }
+
+    private boolean isReservedAddress(String ipLiteral) {
+        try {
+            InetAddress address = InetAddress.getByName(ipLiteral);
+            byte[] bytes = address.getAddress();
+
+            // Blocks loopback, link-local, site-local and unspecified addresses.
+            if (address.isAnyLocalAddress() ||
+                    address.isLoopbackAddress() ||
+                    address.isLinkLocalAddress() ||
+                    address.isSiteLocalAddress() ||
+                    address.isMulticastAddress()) {
+                return true;
+            }
+
+            // Block CGNAT range 100.64.0.0/10.
+            if (bytes.length == 4) {
+                int first = bytes[0] & 0xFF;
+                int second = bytes[1] & 0xFF;
+                return first == 100 && second >= 64 && second <= 127;
+            }
+
+            // Block IPv6 Unique Local Address range fc00::/7.
+            if (bytes.length == 16) {
+                int first = bytes[0] & 0xFF;
+                return (first & 0xFE) == 0xFC;
+            }
+            return false;
+        } catch (UnknownHostException e) {
+            return false;
         }
     }
 }
