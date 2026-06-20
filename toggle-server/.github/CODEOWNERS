@@ -1,0 +1,8 @@
+# Default owners
+* @team-toggle
+
+# Domain owners
+/src/main/java/com/toggle/server/toggle/ @team-toggle-core
+/src/main/java/com/toggle/server/client/ @team-toggle-client
+/src/main/java/com/toggle/server/delivery/ @team-toggle-delivery
+/src/main/resources/db/migration/ @team-toggle-data
