@@ -41,10 +41,25 @@ public class TogglePersistenceAdapter {
 
     @Transactional(readOnly = true)
     public Slice<Toggle> findAll(String ownerServiceName, Boolean enabled, Pageable pageable) {
-        Slice<ToggleEntity> slice = enabled != null
-                ? repository.findByOwnerServiceNameAndEnabled(ownerServiceName, enabled, pageable)
-                : repository.findByOwnerServiceName(ownerServiceName, pageable);
-        return slice.map(this::toDomain);
+        var hasOwnerFilter = ownerServiceName != null && !ownerServiceName.isBlank();
+
+        if (hasOwnerFilter && enabled != null) {
+            return repository.findByOwnerServiceNameAndEnabled(ownerServiceName, enabled, pageable)
+                    .map(this::toDomain);
+        }
+
+        if (hasOwnerFilter) {
+            return repository.findByOwnerServiceName(ownerServiceName, pageable)
+                    .map(this::toDomain);
+        }
+
+        if (enabled != null) {
+            return repository.findByEnabled(enabled, pageable)
+                    .map(this::toDomain);
+        }
+
+        return repository.findAll(pageable)
+                .map(this::toDomain);
     }
 
     @Transactional

@@ -1,6 +1,8 @@
 package com.toggle.server.toggle.application;
 
+import org.springframework.lang.Nullable;
+
 public record ListTogglesQuery(
-        String ownerServiceName,
+        @Nullable String ownerServiceName,
         Boolean enabled) {
 }

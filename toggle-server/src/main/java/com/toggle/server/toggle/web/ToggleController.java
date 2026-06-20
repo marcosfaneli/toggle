@@ -64,7 +64,7 @@ public class ToggleController {
 
     @GetMapping
     public ResponseEntity<PagedToggleResponse> list(
-            @RequestParam String ownerServiceName,
+            @RequestParam(required = false) String ownerServiceName,
             @RequestParam(required = false) Boolean enabled,
             @PageableDefault(size = 20) Pageable pageable,
             HttpServletRequest request) {

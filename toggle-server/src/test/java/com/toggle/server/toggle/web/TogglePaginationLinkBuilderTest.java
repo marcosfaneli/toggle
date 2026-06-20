@@ -80,4 +80,13 @@ class TogglePaginationLinkBuilderTest {
 
         assertThat(links).noneMatch(l -> l.contains("enabled="));
     }
+
+    @Test
+    void shouldOmitOwnerServiceNameWhenNull() {
+        var pageable = PageRequest.of(0, 20);
+
+        var links = builder.buildLinks(mockRequest(), null, null, slice(0, false), pageable);
+
+        assertThat(links).noneMatch(l -> l.contains("ownerServiceName="));
+    }
 }

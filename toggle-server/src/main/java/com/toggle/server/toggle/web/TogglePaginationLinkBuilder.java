@@ -29,9 +29,11 @@ class TogglePaginationLinkBuilder {
     private String pageUri(HttpServletRequest request, String ownerServiceName, Boolean enabled, int size, int page) {
         var uri = Objects.requireNonNull(request.getRequestURL().toString());
         var builder = UriComponentsBuilder.fromUriString(uri)
-                .queryParam("ownerServiceName", ownerServiceName)
                 .queryParam("size", size)
                 .queryParam("page", page);
+        if (ownerServiceName != null && !ownerServiceName.isBlank()) {
+            builder.queryParam("ownerServiceName", ownerServiceName);
+        }
         if (enabled != null) {
             builder.queryParam("enabled", enabled);
         }

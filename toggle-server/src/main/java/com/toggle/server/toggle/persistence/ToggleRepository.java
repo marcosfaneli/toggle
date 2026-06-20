@@ -20,5 +20,8 @@ interface ToggleRepository extends JpaRepository<ToggleEntity, Long> {
     Slice<ToggleEntity> findByOwnerServiceNameAndEnabled(String ownerServiceName, boolean enabled, Pageable pageable);
 
     @EntityGraph(attributePaths = "value")
+    Slice<ToggleEntity> findByEnabled(boolean enabled, Pageable pageable);
+
+    @EntityGraph(attributePaths = "value")
     Optional<ToggleEntity> findByName(String name);
 }

@@ -264,6 +264,21 @@ class ToggleControllerTest {
                 .andExpect(jsonPath("$.content[0].enabled").value(false));
     }
 
+        @Test
+        void shouldFilterByEnabledWithoutOwnerServiceName() throws Exception {
+                var toggle = new Toggle("01ID", "enabled-toggle", "checkout-service", true, 1L, Instant.now(), null);
+                var pageable = PageRequest.of(0, 20);
+                var slice = newSlice(pageable, false, toggle);
+
+                when(listTogglesUseCase.execute(any(ListTogglesQuery.class), any(Pageable.class))).thenReturn(slice);
+
+                mockMvc.perform(get("/toggles")
+                                .param("enabled", "true"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.content[0].enabled").value(true))
+                                .andExpect(header().string("Link", Objects.requireNonNull(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("ownerServiceName=")))));
+        }
+
     @Test
     void shouldReturn400WhenEnabledParamIsInvalid() throws Exception {
         mockMvc.perform(get("/toggles")
@@ -277,13 +292,17 @@ class ToggleControllerTest {
     }
 
     @Test
-    void shouldReturn400WhenOwnerServiceNameIsMissing() throws Exception {
+        void shouldReturnPagedTogglesWhenOwnerServiceNameIsMissing() throws Exception {
+                var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", true, 1L, Instant.now(), null);
+                var pageable = PageRequest.of(0, 20);
+                var slice = newSlice(pageable, false, toggle);
+
+                when(listTogglesUseCase.execute(any(ListTogglesQuery.class), any(Pageable.class))).thenReturn(slice);
+
         mockMvc.perform(get("/toggles"))
-                .andExpect(status().isBadRequest())
-                                .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.detail").exists())
-                .andExpect(jsonPath("$.instance").exists());
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.content[0].name").value("novo-checkout"))
+                                .andExpect(header().string("Link", Objects.requireNonNull(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("ownerServiceName=")))));
     }
 
         @Test
