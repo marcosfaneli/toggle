@@ -34,6 +34,15 @@ Com a aplicacao em execucao, acesse:
 - Swagger UI: http://localhost:8080/swagger-ui/index.html
 - OpenAPI JSON: http://localhost:8080/v3/api-docs
 
+### Clients
+
+```http
+GET /clients
+GET /clients?serviceName=checkout-service
+```
+
+Lista instancias de clients registradas e suas assinaturas de toggles. O parametro `serviceName` e opcional; quando informado, restringe o resultado ao servico solicitado.
+
 ## Build e testes
 
 ```bash

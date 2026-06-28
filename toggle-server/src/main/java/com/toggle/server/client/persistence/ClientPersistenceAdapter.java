@@ -1,6 +1,7 @@
 package com.toggle.server.client.persistence;
 
 import com.github.f4b6a3.ulid.UlidCreator;
+import com.toggle.server.client.application.ClientView;
 import com.toggle.server.client.domain.ClientInstance;
 import com.toggle.server.client.domain.ClientInstanceInactiveException;
 import com.toggle.server.client.domain.ClientInstanceNotFoundException;
@@ -15,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class ClientPersistenceAdapter {
@@ -93,6 +96,30 @@ public class ClientPersistenceAdapter {
     public List<ClientInstance> findActiveInstancesForToggle(String toggleName) {
         return instanceRepository.findActiveInstancesForToggle(toggleName, ClientInstanceStatus.ACTIVE.name()).stream()
                 .map(this::toDomain)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClientView> findClients(String serviceName) {
+        var instances = serviceName == null
+                ? instanceRepository.findAllByOrderByServiceNameAscInstanceIdAsc()
+                : instanceRepository.findAllByServiceNameOrderByInstanceIdAsc(serviceName);
+
+        if (instances.isEmpty()) {
+            return List.of();
+        }
+
+        var instanceIds = instances.stream()
+                .map(ClientInstanceEntity::getId)
+                .toList();
+
+        var subscriptionsByInstanceId = subscriptionRepository
+                .findAllByClientInstanceIdInOrderByToggleNameAsc(instanceIds)
+                .stream()
+                .collect(Collectors.groupingBy(ClientSubscriptionEntity::getClientInstanceId));
+
+        return instances.stream()
+                .map(instance -> toView(instance, subscriptionsByInstanceId))
                 .toList();
     }
 
@@ -182,6 +209,29 @@ public class ClientPersistenceAdapter {
     }
 
     public record SubscriberView(Long clientInstanceId, String callbackUrl) {}
+
+    private ClientView toView(
+            ClientInstanceEntity entity,
+            Map<Long, List<ClientSubscriptionEntity>> subscriptionsByInstanceId) {
+        var subscriptions = subscriptionsByInstanceId
+                .getOrDefault(entity.getId(), List.of())
+                .stream()
+                .map(subscription -> new ClientView.SubscriptionView(
+                        subscription.getToggleName(),
+                        subscription.getConsumeMode()))
+                .toList();
+
+        return new ClientView(
+                entity.getPublicId(),
+                entity.getServiceName(),
+                entity.getInstanceId(),
+                entity.getPodName(),
+                entity.getNamespace(),
+                entity.getCallbackUrl(),
+                entity.getStatus(),
+                entity.getRegisteredAt(),
+                subscriptions);
+    }
 
     private ClientInstance toDomain(ClientInstanceEntity entity) {
         return new ClientInstance(

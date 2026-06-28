@@ -23,12 +23,15 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
+import com.toggle.server.client.application.ClientView;
+import com.toggle.server.client.application.ListClientsUseCase;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -46,6 +49,9 @@ class ClientControllerTest {
 
     @MockitoBean
     private DeregisterClientUseCase deregisterClientUseCase;
+
+    @MockitoBean
+    private ListClientsUseCase listClientsUseCase;
 
     private static final Instant NOW = Instant.now();
 
@@ -70,6 +76,19 @@ class ClientControllerTest {
                 1L,
                 NOW,
                 null);
+    }
+
+    private static ClientView aClientView() {
+        return new ClientView(
+                "01INSTANCE00000000000000000",
+                "checkout-service",
+                "checkout-7d8d4c7f6f-abcde",
+                "checkout-7d8d4c7f6f-abcde",
+                "payments",
+                "http://10.42.1.25:8080/internal/feature-toggles",
+                "ACTIVE",
+                NOW,
+                List.of(new ClientView.SubscriptionView("novo-checkout", "LOCAL_CACHE")));
     }
 
     private static Toggle aToggleWithValue() {
@@ -264,6 +283,54 @@ class ClientControllerTest {
                 .content(body))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.serviceName").value("checkout-service"));
+    }
+
+    @Test
+    void shouldListClientsWithSubscriptions() throws Exception {
+        when(listClientsUseCase.execute((String) null)).thenReturn(List.of(aClientView()));
+
+        mockMvc.perform(get("/clients"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].instanceId").value("checkout-7d8d4c7f6f-abcde"))
+                .andExpect(jsonPath("$[0].serviceName").value("checkout-service"))
+                .andExpect(jsonPath("$[0].subscriptions").isArray())
+                .andExpect(jsonPath("$[0].subscriptions[0].toggleName").value("novo-checkout"))
+                .andExpect(jsonPath("$[0].subscriptions[0].consumeMode").value("LOCAL_CACHE"));
+    }
+
+    @Test
+    void shouldListClientsFilteredByServiceName() throws Exception {
+        when(listClientsUseCase.execute("checkout-service")).thenReturn(List.of(aClientView()));
+
+        mockMvc.perform(get("/clients")
+                        .param("serviceName", "checkout-service"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].instanceId").value("checkout-7d8d4c7f6f-abcde"))
+                .andExpect(jsonPath("$[0].serviceName").value("checkout-service"))
+                .andExpect(jsonPath("$[0].subscriptions[0].toggleName").value("novo-checkout"));
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenServiceNameHasNoClients() throws Exception {
+        when(listClientsUseCase.execute("unknown-service")).thenReturn(List.of());
+
+        mockMvc.perform(get("/clients")
+                        .param("serviceName", "unknown-service"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+    }
+
+    @Test
+    void shouldReturn400WhenServiceNameFilterIsBlank() throws Exception {
+        mockMvc.perform(get("/clients")
+                        .param("serviceName", " "))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test

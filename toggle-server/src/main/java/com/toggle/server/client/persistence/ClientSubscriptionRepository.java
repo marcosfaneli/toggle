@@ -9,4 +9,6 @@ interface ClientSubscriptionRepository extends JpaRepository<ClientSubscriptionE
     void deleteAllByClientInstanceId(Long clientInstanceId);
 
     List<ClientSubscriptionEntity> findByToggleName(String toggleName);
+
+    List<ClientSubscriptionEntity> findAllByClientInstanceIdInOrderByToggleNameAsc(List<Long> clientInstanceIds);
 }
