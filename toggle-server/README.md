@@ -39,9 +39,11 @@ Com a aplicacao em execucao, acesse:
 ```http
 GET /clients
 GET /clients?serviceName=checkout-service
+GET /clients?status=ACTIVE
+GET /clients?serviceName=checkout-service&status=INACTIVE
 ```
 
-Lista instancias de clients registradas e suas assinaturas de toggles. O parametro `serviceName` e opcional; quando informado, restringe o resultado ao servico solicitado.
+Lista instancias de clients registradas e suas assinaturas de toggles. Os parametros `serviceName` e `status` sao opcionais; quando informados, restringem o resultado ao servico e status solicitados. Valores aceitos para `status`: `ACTIVE` e `INACTIVE`.
 
 ## Build e testes
 

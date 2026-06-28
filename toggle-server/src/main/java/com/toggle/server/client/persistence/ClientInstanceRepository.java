@@ -16,6 +16,10 @@ interface ClientInstanceRepository extends JpaRepository<ClientInstanceEntity, L
 
     List<ClientInstanceEntity> findAllByServiceNameOrderByInstanceIdAsc(String serviceName);
 
+    List<ClientInstanceEntity> findAllByStatusOrderByServiceNameAscInstanceIdAsc(String status);
+
+    List<ClientInstanceEntity> findAllByServiceNameAndStatusOrderByInstanceIdAsc(String serviceName, String status);
+
     List<ClientInstanceEntity> findAllByStatusAndLastHeartbeatAtBefore(String status, Instant threshold);
 
     @Query("""

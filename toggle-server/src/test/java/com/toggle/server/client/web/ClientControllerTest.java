@@ -287,7 +287,7 @@ class ClientControllerTest {
 
     @Test
     void shouldListClientsWithSubscriptions() throws Exception {
-        when(listClientsUseCase.execute((String) null)).thenReturn(List.of(aClientView()));
+        when(listClientsUseCase.execute(null, null)).thenReturn(List.of(aClientView()));
 
         mockMvc.perform(get("/clients"))
                 .andExpect(status().isOk())
@@ -301,7 +301,7 @@ class ClientControllerTest {
 
     @Test
     void shouldListClientsFilteredByServiceName() throws Exception {
-        when(listClientsUseCase.execute("checkout-service")).thenReturn(List.of(aClientView()));
+        when(listClientsUseCase.execute("checkout-service", null)).thenReturn(List.of(aClientView()));
 
         mockMvc.perform(get("/clients")
                         .param("serviceName", "checkout-service"))
@@ -313,8 +313,34 @@ class ClientControllerTest {
     }
 
     @Test
+    void shouldListClientsFilteredByStatus() throws Exception {
+        when(listClientsUseCase.execute(null, ClientInstanceStatus.ACTIVE)).thenReturn(List.of(aClientView()));
+
+        mockMvc.perform(get("/clients")
+                        .param("status", "ACTIVE"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].instanceId").value("checkout-7d8d4c7f6f-abcde"))
+                .andExpect(jsonPath("$[0].status").value("ACTIVE"));
+    }
+
+    @Test
+    void shouldListClientsFilteredByServiceNameAndStatus() throws Exception {
+        when(listClientsUseCase.execute("checkout-service", ClientInstanceStatus.ACTIVE))
+                .thenReturn(List.of(aClientView()));
+
+        mockMvc.perform(get("/clients")
+                        .param("serviceName", "checkout-service")
+                        .param("status", "ACTIVE"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].serviceName").value("checkout-service"))
+                .andExpect(jsonPath("$[0].status").value("ACTIVE"));
+    }
+
+    @Test
     void shouldReturnEmptyListWhenServiceNameHasNoClients() throws Exception {
-        when(listClientsUseCase.execute("unknown-service")).thenReturn(List.of());
+        when(listClientsUseCase.execute("unknown-service", null)).thenReturn(List.of());
 
         mockMvc.perform(get("/clients")
                         .param("serviceName", "unknown-service"))
@@ -327,6 +353,16 @@ class ClientControllerTest {
     void shouldReturn400WhenServiceNameFilterIsBlank() throws Exception {
         mockMvc.perform(get("/clients")
                         .param("serviceName", " "))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.detail").exists());
+    }
+
+    @Test
+    void shouldReturn400WhenStatusFilterIsInvalid() throws Exception {
+        mockMvc.perform(get("/clients")
+                        .param("status", "UNKNOWN"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
                 .andExpect(jsonPath("$.status").value(400))

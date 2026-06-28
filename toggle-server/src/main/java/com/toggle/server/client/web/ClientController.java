@@ -4,6 +4,7 @@ import com.toggle.server.client.application.DeregisterClientUseCase;
 import com.toggle.server.client.application.ClientView;
 import com.toggle.server.client.application.ListClientsUseCase;
 import com.toggle.server.client.application.RegisterClientUseCase;
+import com.toggle.server.client.domain.ClientInstanceStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.slf4j.Logger;
@@ -36,12 +37,14 @@ public class ClientController {
     }
 
     @GetMapping
-    public List<ClientView> list(@RequestParam(required = false) String serviceName) {
+    public List<ClientView> list(
+            @RequestParam(required = false) String serviceName,
+            @RequestParam(required = false) ClientInstanceStatus status) {
         if (serviceName != null && serviceName.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "serviceName must not be blank");
         }
 
-        return listClientsUseCase.execute(serviceName);
+        return listClientsUseCase.execute(serviceName, status);
     }
 
     @PostMapping("/register")

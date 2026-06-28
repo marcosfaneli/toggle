@@ -1,5 +1,6 @@
 package com.toggle.server.client.application;
 
+import com.toggle.server.client.domain.ClientInstanceStatus;
 import com.toggle.server.client.persistence.ClientPersistenceAdapter;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,10 @@ public class ListClientsUseCase {
     }
 
     public List<ClientView> execute(String serviceName) {
-        return clientPersistenceAdapter.findClients(serviceName);
+        return execute(serviceName, null);
+    }
+
+    public List<ClientView> execute(String serviceName, ClientInstanceStatus status) {
+        return clientPersistenceAdapter.findClients(serviceName, status);
     }
 }

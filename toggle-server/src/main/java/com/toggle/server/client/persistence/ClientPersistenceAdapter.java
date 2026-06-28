@@ -101,9 +101,12 @@ public class ClientPersistenceAdapter {
 
     @Transactional(readOnly = true)
     public List<ClientView> findClients(String serviceName) {
-        var instances = serviceName == null
-                ? instanceRepository.findAllByOrderByServiceNameAscInstanceIdAsc()
-                : instanceRepository.findAllByServiceNameOrderByInstanceIdAsc(serviceName);
+        return findClients(serviceName, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClientView> findClients(String serviceName, ClientInstanceStatus status) {
+        var instances = findClientInstances(serviceName, status);
 
         if (instances.isEmpty()) {
             return List.of();
@@ -121,6 +124,23 @@ public class ClientPersistenceAdapter {
         return instances.stream()
                 .map(instance -> toView(instance, subscriptionsByInstanceId))
                 .toList();
+    }
+
+    private List<ClientInstanceEntity> findClientInstances(String serviceName, ClientInstanceStatus status) {
+        if (serviceName == null && status == null) {
+            return instanceRepository.findAllByOrderByServiceNameAscInstanceIdAsc();
+        }
+
+        if (serviceName != null && status == null) {
+            return instanceRepository.findAllByServiceNameOrderByInstanceIdAsc(serviceName);
+        }
+
+        var statusName = status.name();
+        if (serviceName == null) {
+            return instanceRepository.findAllByStatusOrderByServiceNameAscInstanceIdAsc(statusName);
+        }
+
+        return instanceRepository.findAllByServiceNameAndStatusOrderByInstanceIdAsc(serviceName, statusName);
     }
 
     @Transactional
