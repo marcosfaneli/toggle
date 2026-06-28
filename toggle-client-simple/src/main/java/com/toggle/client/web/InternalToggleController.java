@@ -6,6 +6,7 @@ import com.toggle.client.runtime.ToggleResolution;
 import com.toggle.client.runtime.ToggleRuntimeService;
 import com.toggle.client.runtime.ToggleSnapshot;
 import com.toggle.client.runtime.ToggleValue;
+import org.springframework.http.HttpStatus;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,5 +58,15 @@ public class InternalToggleController {
     public ConsumeMode mode(@PathVariable String toggleName) {
         var resolution = runtimeService.resolve(toggleName);
         return resolution.mode();
+    }
+
+    @GetMapping("/toggles/{toggleName}/decision")
+    public ResponseEntity<ToggleDecisionResponse> decision(@PathVariable String toggleName) {
+        var resolution = runtimeService.resolve(toggleName);
+        var response = resolution.enabled()
+                ? new ToggleDecisionResponse(toggleName, true, "new-flow", "Usando fluxo novo")
+                : new ToggleDecisionResponse(toggleName, false, "legacy-flow", "Usando fluxo legado");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
