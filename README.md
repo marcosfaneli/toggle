@@ -120,6 +120,10 @@ cd toggle-server
 mvn test
 ```
 
+## Minikube
+
+Para validar o server e múltiplas réplicas do client em Kubernetes local, use os manifests e o roteiro em [`k8s/minikube`](./k8s/minikube/README.md).
+
 ## Importing the API collection
 
 Import `insomnia-collection.json` into Insomnia to test the endpoints.
