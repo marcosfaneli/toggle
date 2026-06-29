@@ -1,0 +1,20 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: checkout-service-with-lib
+
+feature:
+  toggles:
+    service-name: checkout-service-with-lib
+    instance-id: checkout-with-lib-local-1
+    pod-name: checkout-with-lib-local-1
+    namespace: local
+    server-base-url: http://localhost:8080
+    callback-base-url: http://localhost:8083
+    callback-path: /internal/feature-toggles
+    heartbeat-interval-ms: 5000
+    consumed:
+      novo-checkout: LOCAL_CACHE
+      pagamento-v2: REMOTE_ALWAYS
