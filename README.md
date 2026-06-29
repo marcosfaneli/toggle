@@ -120,6 +120,35 @@ cd toggle-server
 mvn test
 ```
 
+## Feature Toggle Client Library
+
+The reusable Spring Boot client is available in
+[`toggle-client-spring-boot-starter`](./toggle-client-spring-boot-starter).
+It handles registration, heartbeat, server communication, local cache and the
+callback endpoint:
+
+```http
+PUT /internal/feature-toggles/{toggleName}
+```
+
+Applications consume it by adding the dependency and injecting
+`FeatureToggleClient`:
+
+```java
+if (featureToggleClient.isEnabled("pagamento-v2")) {
+    // new flow
+}
+
+featureToggleClient.getValue("pagamento-v2")
+        .ifPresent(value -> {
+            // value.type() and value.raw()
+        });
+```
+
+[`toggle-client-with-lib`](./toggle-client-with-lib) is an example application
+using the starter. The original [`toggle-client-simple`](./toggle-client-simple)
+remains intact as the historical/manual client implementation.
+
 ## Minikube
 
 Para validar o server e múltiplas réplicas do client em Kubernetes local, use os manifests e o roteiro em [`k8s/minikube`](./k8s/minikube/README.md).
