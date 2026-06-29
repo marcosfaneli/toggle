@@ -1,25 +1,25 @@
 # Contributing
 
-## Regras de contribuição
-- Toda mudança deve incluir ou atualizar testes.
-- Use `mvn clean verify` antes de abrir PR.
-- Não altere migrações Flyway existentes; adicione nova versão.
-- Mantenha validações de entrada no layer web (Bean Validation).
-- Preserve tratamento de erro padronizado em `ProblemDetail`.
+## Contribution Rules
+- Every change must include or update tests.
+- Use `mvn clean verify` before opening a PR.
+- Do not change existing Flyway migrations; add a new version.
+- Keep input validation in the web layer (Bean Validation).
+- Preserve standardized `ProblemDetail` error handling.
 
-## Padrões arquiteturais
-- Domínio separado por contextos: `toggle`, `client`, `delivery`.
-- Fluxo esperado: web -> application -> persistence/domain.
-- Evite acoplamento direto entre contextos; prefira contratos explícitos quando evoluir o código.
+## Architecture Patterns
+- Domain separated by contexts: `toggle`, `client`, `delivery`.
+- Expected flow: web -> application -> persistence/domain.
+- Avoid direct coupling between contexts; prefer explicit contracts when evolving the code.
 
-## Checklist de Pull Request
-- [ ] Build e testes locais passaram (`mvn clean verify`)
-- [ ] Casos de erro cobertos por teste
-- [ ] Sem quebra de contrato de API
-- [ ] Migração de banco incluída quando necessário
-- [ ] Logs relevantes mantidos para troubleshooting
+## Pull Request Checklist
+- [ ] Local build and tests passed (`mvn clean verify`)
+- [ ] Error cases covered by tests
+- [ ] No API contract break
+- [ ] Database migration included when required
+- [ ] Relevant logs kept for troubleshooting
 
-## Guias para contribuicao com IA
+## AI Contribution Guides
 - `AGENTS.md`
 - `.github/copilot-instructions.md`
 - `docs/ARCHITECTURE.md`

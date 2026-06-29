@@ -19,7 +19,7 @@ class ToggleClientAutoConfigurationTest {
                     "feature.toggles.namespace=local",
                     "feature.toggles.server-base-url=http://localhost:8080",
                     "feature.toggles.callback-base-url=http://localhost:8082",
-                    "feature.toggles.consumed.novo-checkout=LOCAL_CACHE");
+                    "feature.toggles.consumed.new-checkout=LOCAL_CACHE");
 
     @Test
     void shouldCreateClientBeansWhenEnabled() {

@@ -64,8 +64,8 @@ public class InternalToggleController {
     public ResponseEntity<ToggleDecisionResponse> decision(@PathVariable String toggleName) {
         var resolution = runtimeService.resolve(toggleName);
         var response = resolution.enabled()
-                ? new ToggleDecisionResponse(toggleName, true, "new-flow", "Usando fluxo novo")
-                : new ToggleDecisionResponse(toggleName, false, "legacy-flow", "Usando fluxo legado");
+                ? new ToggleDecisionResponse(toggleName, true, "new-flow", "Using new flow")
+                : new ToggleDecisionResponse(toggleName, false, "legacy-flow", "Using legacy flow");
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

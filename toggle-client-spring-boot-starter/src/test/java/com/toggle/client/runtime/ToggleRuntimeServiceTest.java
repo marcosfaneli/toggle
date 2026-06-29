@@ -16,16 +16,16 @@ class ToggleRuntimeServiceTest {
     @Test
     void shouldResolveFromCacheWhenLocalCacheMode() {
         var cache = new ToggleCache();
-        cache.putIfNewer(new ToggleSnapshot("novo-checkout", true, null, 1, Instant.now()));
+        cache.putIfNewer(new ToggleSnapshot("new-checkout", true, null, 1, Instant.now()));
 
         var serverClient = new StubServerClient(Optional.empty());
         var service = new ToggleRuntimeService(properties(), cache, serverClient);
 
-        var resolution = service.resolve("novo-checkout");
+        var resolution = service.resolve("new-checkout");
 
         assertThat(resolution.found()).isTrue();
         assertThat(resolution.enabled()).isTrue();
-        assertThat(service.isEnabled("novo-checkout")).isTrue();
+        assertThat(service.isEnabled("new-checkout")).isTrue();
         assertThat(resolution.mode()).isEqualTo(ConsumeMode.LOCAL_CACHE);
         assertThat(resolution.source()).isEqualTo("CACHE");
     }
@@ -33,21 +33,21 @@ class ToggleRuntimeServiceTest {
     @Test
     void shouldResolveValueFromRemoteWhenRemoteAlwaysMode() {
         var cache = new ToggleCache();
-        var remote = new ToggleSnapshot("pagamento-v2", false, new ToggleValue("NUMBER", "10"), 4, Instant.now());
+        var remote = new ToggleSnapshot("payment-v2", false, new ToggleValue("NUMBER", "10"), 4, Instant.now());
 
         var serverClient = new StubServerClient(Optional.of(remote));
         var service = new ToggleRuntimeService(properties(), cache, serverClient);
 
-        var resolution = service.resolve("pagamento-v2");
+        var resolution = service.resolve("payment-v2");
 
         assertThat(resolution.found()).isTrue();
         assertThat(resolution.enabled()).isFalse();
-        assertThat(service.getValue("pagamento-v2"))
+        assertThat(service.getValue("payment-v2"))
                 .hasValue(new ToggleValue("NUMBER", "10"));
         assertThat(resolution.mode()).isEqualTo(ConsumeMode.REMOTE_ALWAYS);
         assertThat(resolution.source()).isEqualTo("REMOTE");
-        assertThat(cache.get("pagamento-v2")).isPresent();
-        assertThat(cache.get("pagamento-v2").get().version()).isEqualTo(4);
+        assertThat(cache.get("payment-v2")).isPresent();
+        assertThat(cache.get("payment-v2").get().version()).isEqualTo(4);
     }
 
     private FeatureToggleProperties properties() {
@@ -62,8 +62,8 @@ class ToggleRuntimeServiceTest {
                 "/internal/feature-toggles",
                 30_000,
                 Map.of(
-                        "novo-checkout", ConsumeMode.LOCAL_CACHE,
-                        "pagamento-v2", ConsumeMode.REMOTE_ALWAYS));
+                        "new-checkout", ConsumeMode.LOCAL_CACHE,
+                        "payment-v2", ConsumeMode.REMOTE_ALWAYS));
     }
 
     private static final class StubServerClient implements ToggleServerClient {

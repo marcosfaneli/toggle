@@ -26,8 +26,8 @@ feature:
     callback-path: /internal/feature-toggles
     heartbeat-interval-ms: 5000
     consumed:
-      novo-checkout: LOCAL_CACHE
-      pagamento-v2: REMOTE_ALWAYS
+      new-checkout: LOCAL_CACHE
+      payment-v2: REMOTE_ALWAYS
 ```
 
 ## Usage
@@ -44,11 +44,11 @@ class CheckoutService {
     }
 
     void checkout() {
-        if (featureToggleClient.isEnabled("pagamento-v2")) {
+        if (featureToggleClient.isEnabled("payment-v2")) {
             // new flow
         }
 
-        featureToggleClient.getValue("pagamento-v2")
+        featureToggleClient.getValue("payment-v2")
                 .ifPresent(value -> {
                     // value.type() and value.raw()
                 });

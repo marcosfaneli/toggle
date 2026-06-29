@@ -1,86 +1,86 @@
 # Architecture - toggle-server
 
-## Objetivo
+## Goal
 
-O toggle-server gerencia definicao de toggles, registro de clientes e entrega de atualizacoes por callback.
+`toggle-server` manages toggle definitions, client registration, and callback-based update delivery.
 
-## Contextos do dominio
+## Domain Contexts
 
-### 1) toggle
-Responsavel por:
-- Criacao, leitura, listagem e atualizacao de toggles.
-- Validacao de tipo e valor de toggle.
+### 1. toggle
+Responsible for:
+- Creating, reading, listing, and updating toggles.
+- Validating toggle type and value.
 
-Pacotes relevantes:
-- src/main/java/com/toggle/server/toggle/web
-- src/main/java/com/toggle/server/toggle/application
-- src/main/java/com/toggle/server/toggle/persistence
+Relevant packages:
+- `src/main/java/com/toggle/server/toggle/web`
+- `src/main/java/com/toggle/server/toggle/application`
+- `src/main/java/com/toggle/server/toggle/persistence`
 
-### 2) client
-Responsavel por:
-- Registro e remocao de instancia de cliente.
-- Heartbeat e ciclo de vida de instancia.
-- Assinaturas de toggles por cliente.
+### 2. client
+Responsible for:
+- Client instance registration and removal.
+- Heartbeat and instance lifecycle.
+- Toggle subscriptions by client.
 
-Pacotes relevantes:
-- src/main/java/com/toggle/server/client/web
-- src/main/java/com/toggle/server/client/application
-- src/main/java/com/toggle/server/client/persistence
+Relevant packages:
+- `src/main/java/com/toggle/server/client/web`
+- `src/main/java/com/toggle/server/client/application`
+- `src/main/java/com/toggle/server/client/persistence`
 
-### 3) delivery
-Responsavel por:
-- Reacao a atualizacao de toggle.
-- Entrega de evento para callbacks de clientes assinantes.
-- Registro de estado de sincronizacao de entrega.
+### 3. delivery
+Responsible for:
+- Reacting to toggle updates.
+- Delivering events to subscribed client callbacks.
+- Recording delivery synchronization state.
 
-Pacotes relevantes:
-- src/main/java/com/toggle/server/delivery/application
-- src/main/java/com/toggle/server/delivery/infrastructure
-- src/main/java/com/toggle/server/delivery/domain
+Relevant packages:
+- `src/main/java/com/toggle/server/delivery/application`
+- `src/main/java/com/toggle/server/delivery/infrastructure`
+- `src/main/java/com/toggle/server/delivery/domain`
 
-### 4) shared
-Responsavel por:
-- Utilitarios e tipos compartilhados de infraestrutura/erro/tempo.
+### 4. shared
+Responsible for:
+- Shared infrastructure, error, and time utilities and types.
 
-Pacotes relevantes:
-- src/main/java/com/toggle/server/shared
+Relevant packages:
+- `src/main/java/com/toggle/server/shared`
 
-## Fluxo principal
+## Main Flow
 
-1. Cliente chama endpoint HTTP no layer web.
-2. Controller mapeia command/request e delega para use case no layer application.
-3. Use case aplica regra de negocio e persiste/consulta via adapters de persistence.
-4. Em atualizacao de toggle, um evento de dominio dispara fluxo de delivery.
-5. Delivery tenta notificar callbacks inscritos e atualiza estado de sincronizacao.
+1. A client calls an HTTP endpoint in the web layer.
+2. The controller maps the request/command and delegates to an application-layer use case.
+3. The use case applies business rules and persists or queries through persistence adapters.
+4. On toggle update, a domain event triggers the delivery flow.
+5. Delivery notifies subscribed callbacks and updates synchronization state.
 
-## Fronteiras e dependencias
+## Boundaries And Dependencies
 
-- Regra: web depende de application.
-- Regra: application depende de contratos/domain e adapters necessarios.
-- Regra: persistence/infrastructure nao define regra de negocio.
-- Regra: evitar acoplamento direto entre contextos sem contrato explicito.
+- Rule: web depends on application.
+- Rule: application depends on contracts/domain and required adapters.
+- Rule: persistence/infrastructure does not define business rules.
+- Rule: avoid direct coupling between contexts without an explicit contract.
 
-## Dados e migracoes
+## Data And Migrations
 
-- Banco gerenciado com Flyway em src/main/resources/db/migration.
-- Migracoes existentes sao imutaveis.
-- Evolucoes de schema devem ser feitas em novas versoes Vxxx__*.sql.
+- The database is managed by Flyway in `src/main/resources/db/migration`.
+- Existing migrations are immutable.
+- Schema evolution must be implemented through new `Vxxx__*.sql` versions.
 
-## Erros e contratos HTTP
+## Errors And HTTP Contracts
 
-- Erros HTTP devem seguir ProblemDetail.
-- Validacoes de entrada ficam no layer web (Bean Validation) e mapping coerente.
+- HTTP errors must follow ProblemDetail.
+- Input validation stays in the web layer (Bean Validation) with consistent mapping.
 
-## Testes
+## Tests
 
-- Mudanca de comportamento deve incluir teste.
-- Testes web: @WebMvcTest para contrato de endpoint.
-- Regras de negocio: testes unitarios com JUnit 5 e Mockito.
-- Mudancas em persistencia/eventos devem priorizar ampliacao de cobertura de integracao.
+- Behavior changes must include tests.
+- Web tests: `@WebMvcTest` for endpoint contracts.
+- Business rules: unit tests with JUnit 5 and Mockito.
+- Persistence/event changes should prioritize expanded integration coverage.
 
-## Decisoes nao negociaveis
+## Non-Negotiable Decisions
 
-1. Nao alterar migracoes Flyway existentes.
-2. Nao introduzir acoplamento cross-context desnecessario.
-3. Nao quebrar contratos publicos sem alinhamento explicito.
-4. Nao concluir tarefa sem validacao de build/teste.
+1. Do not change existing Flyway migrations.
+2. Do not introduce unnecessary cross-context coupling.
+3. Do not break public contracts without explicit alignment.
+4. Do not finish a task without build/test validation.

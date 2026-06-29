@@ -13,8 +13,8 @@ class RegisterClientCommandMapperTest {
     @Test
     void shouldMapRequestToCommand() {
         var subscriptions = List.of(
-                new RegisterClientRequest.SubscriptionRequest("novo-checkout", "LOCAL_CACHE"),
-                new RegisterClientRequest.SubscriptionRequest("pagamento-v2", "REMOTE_ALWAYS"));
+                new RegisterClientRequest.SubscriptionRequest("new-checkout", "LOCAL_CACHE"),
+                new RegisterClientRequest.SubscriptionRequest("payment-v2", "REMOTE_ALWAYS"));
 
         var request = new RegisterClientRequest(
                 "checkout-service",
@@ -32,9 +32,9 @@ class RegisterClientCommandMapperTest {
         assertThat(command.namespace()).isEqualTo("payments");
         assertThat(command.callbackUrl()).isEqualTo("http://10.42.1.25:8080/internal/feature-toggles");
         assertThat(command.subscriptions()).hasSize(2);
-        assertThat(command.subscriptions().get(0).toggleName()).isEqualTo("novo-checkout");
+        assertThat(command.subscriptions().get(0).toggleName()).isEqualTo("new-checkout");
         assertThat(command.subscriptions().get(0).consumeMode()).isEqualTo("LOCAL_CACHE");
-        assertThat(command.subscriptions().get(1).toggleName()).isEqualTo("pagamento-v2");
+        assertThat(command.subscriptions().get(1).toggleName()).isEqualTo("payment-v2");
         assertThat(command.subscriptions().get(1).consumeMode()).isEqualTo("REMOTE_ALWAYS");
     }
 

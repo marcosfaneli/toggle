@@ -19,7 +19,7 @@ The application runs on `http://localhost:8083`.
 ## Try
 
 ```bash
-curl http://localhost:8083/checkout/toggles/pagamento-v2/decision
+curl http://localhost:8083/checkout/toggles/payment-v2/decision
 ```
 
 The starter callback remains available at:

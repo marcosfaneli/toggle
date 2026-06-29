@@ -1,35 +1,35 @@
 # Toggle Server
 
-Serviço de feature toggles para cadastro de clientes, atualização de toggles e entrega de mudanças por callback.
+Feature toggle service for client registration, toggle updates, and callback-based change delivery.
 
 ## Stack
 - Java 25
 - Spring Boot 3.5
 - Spring Data JPA
 - Flyway
-- MySQL (produção) / H2 (testes)
+- MySQL (production) / H2 (tests)
 - Maven
 
-## Requisitos
+## Requirements
 - JDK 25
 - Maven 3.9+
 
-No ambiente local deste workspace:
+In this workspace's local environment:
 
 ```bash
 export JAVA_HOME=/home/faneli/.jdk/jdk-25.0.2
 export PATH=/home/faneli/.jdk/jdk-25.0.2/bin:$PATH
 ```
 
-## Executar local
+## Run Locally
 
 ```bash
 mvn spring-boot:run
 ```
 
-## Documentacao da API
+## API Documentation
 
-Com a aplicacao em execucao, acesse:
+With the application running, open:
 
 - Swagger UI: http://localhost:8080/swagger-ui/index.html
 - OpenAPI JSON: http://localhost:8080/v3/api-docs
@@ -43,19 +43,22 @@ GET /clients?status=ACTIVE
 GET /clients?serviceName=checkout-service&status=INACTIVE
 ```
 
-Lista instancias de clients registradas e suas assinaturas de toggles. Os parametros `serviceName` e `status` sao opcionais; quando informados, restringem o resultado ao servico e status solicitados. Valores aceitos para `status`: `ACTIVE` e `INACTIVE`.
+Lists registered client instances and their toggle subscriptions. The
+`serviceName` and `status` parameters are optional; when provided, they filter
+the result by the requested service and status. Accepted `status` values:
+`ACTIVE` and `INACTIVE`.
 
-## Build e testes
+## Build And Tests
 
 ```bash
 mvn clean verify
 ```
 
-O comando acima executa:
-- compilação
-- testes
-- relatório de cobertura JaCoCo
-- gate de cobertura (mínimo inicial de 30% de linhas no bundle)
+The command above runs:
+- compilation
+- tests
+- JaCoCo coverage report
+- coverage gate (initial minimum of 30% line coverage for the bundle)
 
 ## Docker
 
@@ -63,22 +66,24 @@ O comando acima executa:
 docker build -t toggle-server:local .
 ```
 
-## Configuração
-As principais variáveis estão em `src/main/resources/application.yml` e incluem:
+## Configuration
+The main variables are defined in `src/main/resources/application.yml` and include:
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`
 - `toggle.api.max-page-size`
 - `toggle.heartbeat.*`
 - `toggle.delivery.timeout-ms`
 
-## Banco de dados
-As migrações estão em `src/main/resources/db/migration` com versionamento Flyway (`Vxxx__...sql`).
-Nunca altere migrações já aplicadas; crie sempre uma nova versão.
+## Database
+Migrations are in `src/main/resources/db/migration` and use Flyway versioning
+(`Vxxx__...sql`). Never change already-applied migrations; always create a new
+version.
 
 ## CI
-Pipeline em `.github/workflows/build.yml` roda `mvn clean verify` para push e pull request.
+The pipeline in `.github/workflows/build.yml` runs `mvn clean verify` for pushes
+and pull requests.
 
-## Agentic coding
-Documentos principais para contribuicao assistida por IA:
+## Agentic Coding
+Main documents for AI-assisted contributions:
 - `AGENTS.md`
 - `.github/copilot-instructions.md`
 - `.instructions.md`

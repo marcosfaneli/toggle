@@ -18,12 +18,12 @@ class ToggleRuntimeServiceTest {
     @Test
     void shouldResolveFromCacheWhenLocalCacheMode() {
         var cache = new ToggleCache();
-        cache.putIfNewer(new ToggleSnapshot("novo-checkout", true, null, 1, Instant.now()));
+        cache.putIfNewer(new ToggleSnapshot("new-checkout", true, null, 1, Instant.now()));
 
         var serverClient = new StubServerClient(Optional.empty());
         var service = new ToggleRuntimeService(properties(), cache, serverClient);
 
-        var resolution = service.resolve("novo-checkout");
+        var resolution = service.resolve("new-checkout");
 
         assertTrue(resolution.found());
         assertTrue(resolution.enabled());
@@ -34,19 +34,19 @@ class ToggleRuntimeServiceTest {
     @Test
     void shouldResolveFromRemoteWhenRemoteAlwaysMode() {
         var cache = new ToggleCache();
-        var remote = new ToggleSnapshot("pagamento-v2", false, new ToggleValue("NUMBER", "10"), 4, Instant.now());
+        var remote = new ToggleSnapshot("payment-v2", false, new ToggleValue("NUMBER", "10"), 4, Instant.now());
 
         var serverClient = new StubServerClient(Optional.of(remote));
         var service = new ToggleRuntimeService(properties(), cache, serverClient);
 
-        var resolution = service.resolve("pagamento-v2");
+        var resolution = service.resolve("payment-v2");
 
         assertTrue(resolution.found());
         assertFalse(resolution.enabled());
         assertEquals(ConsumeMode.REMOTE_ALWAYS, resolution.mode());
         assertEquals("REMOTE", resolution.source());
-        assertTrue(cache.get("pagamento-v2").isPresent());
-        assertEquals(4, cache.get("pagamento-v2").get().version());
+        assertTrue(cache.get("payment-v2").isPresent());
+        assertEquals(4, cache.get("payment-v2").get().version());
     }
 
     private FeatureToggleProperties properties() {
@@ -60,8 +60,8 @@ class ToggleRuntimeServiceTest {
                 "/internal/feature-toggles",
                 30_000,
                 Map.of(
-                        "novo-checkout", ConsumeMode.LOCAL_CACHE,
-                        "pagamento-v2", ConsumeMode.REMOTE_ALWAYS));
+                        "new-checkout", ConsumeMode.LOCAL_CACHE,
+                        "payment-v2", ConsumeMode.REMOTE_ALWAYS));
     }
 
     private static final class StubServerClient implements ToggleServerClient {

@@ -70,13 +70,13 @@ class ToggleControllerTest {
         @Test
         void shouldReturnToggleByNameAndReturn200() throws Exception {
                 var toggleValue = new ToggleValue(ValueType.STRING, "enabled");
-                var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVWX", "novo-checkout", "checkout-service", true, 1L, Instant.parse("2026-05-10T12:00:00Z"), toggleValue);
+                var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVWX", "new-checkout", "checkout-service", true, 1L, Instant.parse("2026-05-10T12:00:00Z"), toggleValue);
 
-                when(getToggleByNameUseCase.execute("novo-checkout")).thenReturn(toggle);
+                when(getToggleByNameUseCase.execute("new-checkout")).thenReturn(toggle);
 
-                mockMvc.perform(get("/toggles/novo-checkout"))
+                mockMvc.perform(get("/toggles/new-checkout"))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.name").value("novo-checkout"))
+                                .andExpect(jsonPath("$.name").value("new-checkout"))
                                 .andExpect(jsonPath("$.ownerServiceName").value("checkout-service"))
                                 .andExpect(jsonPath("$.enabled").value(true))
                                 .andExpect(jsonPath("$.version").value(1))
@@ -86,8 +86,8 @@ class ToggleControllerTest {
 
     @Test
     void shouldCreateToggleAndReturn201() throws Exception {
-        var request = new CreateToggleRequest("novo-checkout", "checkout-service", true, null);
-        var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVWX", "novo-checkout", "checkout-service", true, 1L, Instant.now(), null);
+        var request = new CreateToggleRequest("new-checkout", "checkout-service", true, null);
+        var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVWX", "new-checkout", "checkout-service", true, 1L, Instant.now(), null);
 
         when(createToggleUseCase.execute(any(CreateToggleCommand.class))).thenReturn(toggle);
 
@@ -97,7 +97,7 @@ class ToggleControllerTest {
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
                 .content(body))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value("novo-checkout"))
+                .andExpect(jsonPath("$.name").value("new-checkout"))
                 .andExpect(jsonPath("$.ownerServiceName").value("checkout-service"))
                 .andExpect(jsonPath("$.enabled").value(true))
                 .andExpect(jsonPath("$.version").value(1))
@@ -107,9 +107,9 @@ class ToggleControllerTest {
     @Test
     void shouldCreateToggleWithStringValueAndReturn201() throws Exception {
         var valueRequest = new CreateToggleRequest.ValueRequest("STRING", "enabled");
-        var request = new CreateToggleRequest("novo-checkout", "checkout-service", true, valueRequest);
+        var request = new CreateToggleRequest("new-checkout", "checkout-service", true, valueRequest);
         var toggleValue = new ToggleValue(ValueType.STRING, "enabled");
-        var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVWX", "novo-checkout", "checkout-service", true, 1L, Instant.now(), toggleValue);
+        var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVWX", "new-checkout", "checkout-service", true, 1L, Instant.now(), toggleValue);
 
         when(createToggleUseCase.execute(any(CreateToggleCommand.class))).thenReturn(toggle);
 
@@ -158,23 +158,23 @@ class ToggleControllerTest {
     private static Stream<String> invalidValuePayloads() {
         return Stream.of(
                 """
-                        {"name":"novo-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"BOOLEAN","raw":"true"}}
+                        {"name":"new-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"BOOLEAN","raw":"true"}}
                         """,
                 """
-                        {"name":"novo-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"","raw":"x"}}
+                        {"name":"new-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"","raw":"x"}}
                         """,
                 """
-                        {"name":"novo-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"STRING","raw":""}}
+                        {"name":"new-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"STRING","raw":""}}
                         """
         );
     }
 
     @Test
     void shouldReturn409WhenToggleAlreadyExists() throws Exception {
-        var request = new CreateToggleRequest("novo-checkout", "checkout-service", true, null);
+        var request = new CreateToggleRequest("new-checkout", "checkout-service", true, null);
 
         when(createToggleUseCase.execute(any(CreateToggleCommand.class)))
-                .thenThrow(new ToggleAlreadyExistsException("novo-checkout"));
+                .thenThrow(new ToggleAlreadyExistsException("new-checkout"));
 
         var body = Objects.requireNonNull(objectMapper.writeValueAsString(request));
 
@@ -205,7 +205,7 @@ class ToggleControllerTest {
 
     @Test
     void shouldReturn400WhenOwnerServiceNameIsBlank() throws Exception {
-        var request = new CreateToggleRequest("novo-checkout", "", true, null);
+        var request = new CreateToggleRequest("new-checkout", "", true, null);
         var body = Objects.requireNonNull(objectMapper.writeValueAsString(request));
 
         mockMvc.perform(post("/toggles")
@@ -220,7 +220,7 @@ class ToggleControllerTest {
 
     @Test
     void shouldReturnPagedTogglesAndLinkHeader() throws Exception {
-        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", true, 1L, Instant.now(), null);
+        var toggle = new Toggle("01ID", "new-checkout", "checkout-service", true, 1L, Instant.now(), null);
         var pageable = PageRequest.of(0, 20);
                 var slice = newSlice(pageable, false, toggle);
 
@@ -229,7 +229,7 @@ class ToggleControllerTest {
         mockMvc.perform(get("/toggles")
                 .param("ownerServiceName", "checkout-service"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].name").value("novo-checkout"))
+                .andExpect(jsonPath("$.content[0].name").value("new-checkout"))
                 .andExpect(jsonPath("$.content[0].ownerServiceName").value("checkout-service"))
                 .andExpect(jsonPath("$.number").value(0))
                 .andExpect(jsonPath("$.size").value(20))
@@ -297,7 +297,7 @@ class ToggleControllerTest {
 
     @Test
         void shouldReturnPagedTogglesWhenOwnerServiceNameIsMissing() throws Exception {
-                var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", true, 1L, Instant.now(), null);
+                var toggle = new Toggle("01ID", "new-checkout", "checkout-service", true, 1L, Instant.now(), null);
                                 var pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "updatedAt"));
                 var slice = newSlice(pageable, false, toggle);
 
@@ -305,7 +305,7 @@ class ToggleControllerTest {
 
         mockMvc.perform(get("/toggles"))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.content[0].name").value("novo-checkout"))
+                                .andExpect(jsonPath("$.content[0].name").value("new-checkout"))
                                 .andExpect(header().string("Link", Objects.requireNonNull(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("ownerServiceName=")))));
 
                 var queryCaptor = ArgumentCaptor.forClass(ListTogglesQuery.class);
@@ -329,7 +329,7 @@ class ToggleControllerTest {
 
     @Test
     void shouldMapCreatedAtSortAliasToUpdatedAt() throws Exception {
-        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", true, 1L, Instant.now(), null);
+        var toggle = new Toggle("01ID", "new-checkout", "checkout-service", true, 1L, Instant.now(), null);
         var pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "updatedAt"));
         var slice = newSlice(pageable, false, toggle);
 
@@ -338,7 +338,7 @@ class ToggleControllerTest {
         mockMvc.perform(get("/toggles")
                         .param("sort", "createdAt,DESC"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].name").value("novo-checkout"));
+                .andExpect(jsonPath("$.content[0].name").value("new-checkout"));
 
         var pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(listTogglesUseCase).execute(any(ListTogglesQuery.class), pageableCaptor.capture());
@@ -385,10 +385,10 @@ class ToggleControllerTest {
 
     @Test
     void shouldUpdateEnabledAndReturn200() throws Exception {
-        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", false, 2L, Instant.now(), null);
+        var toggle = new Toggle("01ID", "new-checkout", "checkout-service", false, 2L, Instant.now(), null);
         when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
 
-        mockMvc.perform(patch("/toggles/novo-checkout")
+        mockMvc.perform(patch("/toggles/new-checkout")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
                                 .content("{\"ownerServiceName\":\"checkout-service\",\"enabled\":false}"))
                 .andExpect(status().isOk())
@@ -412,10 +412,10 @@ class ToggleControllerTest {
 
     @Test
     void shouldRemoveValueAndReturn200() throws Exception {
-        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", true, 2L, Instant.now(), null);
+        var toggle = new Toggle("01ID", "new-checkout", "checkout-service", true, 2L, Instant.now(), null);
         when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
 
-        mockMvc.perform(patch("/toggles/novo-checkout")
+        mockMvc.perform(patch("/toggles/new-checkout")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
                 .content("{\"ownerServiceName\":\"checkout-service\",\"value\":null}"))
                 .andExpect(status().isOk())
@@ -425,10 +425,10 @@ class ToggleControllerTest {
     @Test
     void shouldKeepValueWhenValueFieldAbsentAndReturn200() throws Exception {
         var toggleValue = new ToggleValue(ValueType.STRING, "enabled");
-        var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", false, 2L, Instant.now(), toggleValue);
+        var toggle = new Toggle("01ID", "new-checkout", "checkout-service", false, 2L, Instant.now(), toggleValue);
         when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
 
-        mockMvc.perform(patch("/toggles/novo-checkout")
+        mockMvc.perform(patch("/toggles/new-checkout")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
                 .content("{\"ownerServiceName\":\"checkout-service\",\"enabled\":false}"))
                 .andExpect(status().isOk())
@@ -438,10 +438,10 @@ class ToggleControllerTest {
 
         @Test
         void shouldUpdateWithoutOwnerServiceNameAndReturn200() throws Exception {
-                var toggle = new Toggle("01ID", "novo-checkout", "checkout-service", false, 2L, Instant.now(), null);
+                var toggle = new Toggle("01ID", "new-checkout", "checkout-service", false, 2L, Instant.now(), null);
                 when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
 
-                mockMvc.perform(patch("/toggles/novo-checkout")
+                mockMvc.perform(patch("/toggles/new-checkout")
                                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
                                 .content("{\"enabled\":false}"))
                                 .andExpect(status().isOk())
@@ -466,7 +466,7 @@ class ToggleControllerTest {
 
     @Test
     void shouldReturn400WhenPatchValueTypeIsInvalid() throws Exception {
-        mockMvc.perform(patch("/toggles/novo-checkout")
+        mockMvc.perform(patch("/toggles/new-checkout")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
                                 .content("{\"ownerServiceName\":\"checkout-service\",\"value\":{\"type\":\"BOOLEAN\",\"raw\":\"true\"}}"))
                 .andExpect(status().isBadRequest())

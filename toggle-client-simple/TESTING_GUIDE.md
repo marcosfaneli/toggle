@@ -22,7 +22,7 @@ The client will register itself and begin resolving the configured toggles.
 Once the application is up, test the toggle decision endpoint:
 
 ```bash
-curl http://localhost:8082/internal/toggles/pagamento-v2/decision
+curl http://localhost:8082/internal/toggles/payment-v2/decision
 ```
 
 You should receive a JSON response showing whether the toggle is enabled and which flow the application will use.

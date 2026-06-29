@@ -1,33 +1,33 @@
 # Code Patterns - toggle-server
 
-Este documento define padroes de implementacao para reduzir variacao em contribuicoes assistidas por IA.
+This document defines implementation patterns to reduce variation in AI-assisted contributions.
 
-## 1) Novo endpoint HTTP
+## 1. New HTTP Endpoint
 
 Checklist:
-1. Criar/ajustar DTO de entrada e saida no pacote web do contexto.
-2. Aplicar Bean Validation no request.
-3. Mapear request para command de application.
-4. Delegar regra de negocio para UseCase.
-5. Retornar status e payload consistentes com contrato existente.
-6. Cobrir casos de sucesso e erro com @WebMvcTest.
+1. Create or adjust input and output DTOs in the context's web package.
+2. Apply Bean Validation to the request.
+3. Map the request to an application command.
+4. Delegate business rules to a use case.
+5. Return status and payload consistently with the existing contract.
+6. Cover success and error cases with `@WebMvcTest`.
 
-Estrutura esperada:
+Expected structure:
 - web: Controller + CommandMapper
 - application: UseCase + Command/Result
-- domain/persistence: apenas o necessario
+- domain/persistence: only what is necessary
 
-## 2) Novo UseCase
+## 2. New Use Case
 
 Checklist:
-1. Classe no pacote application do contexto.
-2. Nome orientado a acao (ex.: CreateXUseCase, UpdateYUseCase).
-3. Construtor explicito com dependencias.
-4. Validacoes de regra de negocio no proprio use case.
-5. Sem logica HTTP no application layer.
-6. Teste unitario para caminho feliz e regras de erro.
+1. Class in the context's application package.
+2. Action-oriented name, for example `CreateXUseCase` or `UpdateYUseCase`.
+3. Explicit constructor with dependencies.
+4. Business-rule validation inside the use case.
+5. No HTTP logic in the application layer.
+6. Unit tests for the happy path and error rules.
 
-Template simplificado:
+Simplified template:
 
 ```java
 @Service
@@ -41,32 +41,32 @@ public class ExampleUseCase {
 
     @Transactional
     public ExampleResult execute(ExampleCommand command) {
-        // regra de negocio
+        // business rule
         return repository.save(command);
     }
 }
 ```
 
-## 3) Novo adapter de persistencia
+## 3. New Persistence Adapter
 
 Checklist:
-1. Manter responsabilidades de I/O e mapeamento.
-2. Evitar regra de negocio dentro do adapter.
-3. Prevenir N+1 em consultas com colecoes.
-4. Garantir queries index-friendly quando possivel.
-5. Cobrir comportamento critico com testes de integracao quando aplicavel.
+1. Keep responsibilities limited to I/O and mapping.
+2. Avoid business rules inside the adapter.
+3. Prevent N+1 queries for collection lookups.
+4. Keep queries index-friendly when possible.
+5. Cover critical behavior with integration tests when applicable.
 
-## 4) Novo evento de dominio / entrega
+## 4. New Domain Or Delivery Event
 
 Checklist:
-1. Evento deve representar fato de negocio claro.
-2. Listener assincrono precisa de tratamento de falha observavel.
-3. Nao bloquear thread de request por entrega externa.
-4. Persistir estado minimo de sincronizacao para troubleshooting.
-5. Garantir teste de regressao para fluxo de entrega.
+1. The event must represent a clear business fact.
+2. Asynchronous listeners need observable failure handling.
+3. Do not block the request thread on external delivery.
+4. Persist minimal synchronization state for troubleshooting.
+5. Add a regression test for the delivery flow.
 
-## 5) Regra de mudanca minima
+## 5. Minimum Change Rule
 
-- Nao misturar refatoracao ampla com mudanca funcional.
-- Evitar alterar mais de um contexto sem justificativa explicita.
-- Em caso de duvida, quebrar em PRs menores.
+- Do not mix broad refactoring with functional changes.
+- Avoid changing more than one context without explicit justification.
+- When in doubt, split the work into smaller PRs.

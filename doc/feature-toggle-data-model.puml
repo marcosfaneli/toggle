@@ -1,10 +1,10 @@
 @startuml
-' Modelo de dados sugerido para Feature Toggle em Kubernetes
+' Suggested data model for Feature Toggle on Kubernetes
 
 hide methods
 skinparam classAttributeIconSize 0
 
-title Modelo de Dados - Feature Toggle Sync por Instancia
+title Data Model - Feature Toggle Sync Per Instance
 
 enum ToggleStrategy {
   LOCAL_CACHE
@@ -102,33 +102,33 @@ FeatureToggle "1" -- "0..*" ClientToggleSubscription : consumed by
 ToggleSyncState "1" -- "0..*" ToggleDeliveryEvent : delivery history
 
 note bottom of ToggleSyncState
-Granularidade de controle: toggle + instancia (pod).
-Permite saber exatamente quais replicas estao sincronizadas.
-PK/FK numericas reduzem custo de join e tamanho de indice.
+Control granularity: toggle + instance (pod).
+This shows exactly which replicas are synchronized.
+Numeric PK/FK values reduce join cost and index size.
 end note
 
 note bottom of ClientInstance
-Um registro por pod ativo no Kubernetes.
-Remocao via deregister no shutdown ou expiracao por heartbeat.
+One record per active pod in Kubernetes.
+Removal happens through deregister during shutdown or heartbeat expiration.
 end note
 
 note bottom of ClientToggleSubscription
-MVP: estrategia definida pelo cliente e aplicada na lib local.
-Servidor nao faz governanca/validacao de estrategia neste momento.
+MVP: the strategy is defined by the client and applied by the local library.
+The server does not govern or validate strategy at this stage.
 end note
 
 note bottom of FeatureToggle
-Valor e opcional para o MVP.
-Quando nao houver objeto filho de valor, a toggle funciona apenas como boolean.
-Quando houver, o tipo deve ser declarado (STRING ou NUMBER).
+Value is optional for the MVP.
+When there is no value child object, the toggle works only as a boolean.
+When present, the type must be declared (STRING or NUMBER).
 end note
 
 note bottom of FeatureToggleValue
-Objeto filho opcional para evitar campos duplicados na entidade principal.
-valueRaw transporta o valor; valueType define como interpretar no cliente.
+Optional child object used to avoid duplicated fields on the main entity.
+valueRaw transports the value; valueType defines how the client interprets it.
 end note
 
-note "Padrao recomendado para performance em RDBMS:\nPK interna BIGINT + identificador publico UUIDv7/ULID.\nEvita fragmentacao de indice tipica de UUID aleatorio como PK." as N1
+note "Recommended performance pattern for RDBMS:\ninternal BIGINT PK + public UUIDv7/ULID identifier.\nAvoids index fragmentation typical of random UUID primary keys." as N1
 FeatureToggle .. N1
 
 @enduml

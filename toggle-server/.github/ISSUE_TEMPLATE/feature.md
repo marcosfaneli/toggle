@@ -1,40 +1,40 @@
 ---
 name: Feature Request
-description: Nova funcionalidade com contexto minimo para execucao assistida por IA
+description: New functionality with enough context for AI-assisted execution
 title: "feat: "
 labels: ["feature"]
 assignees: []
 ---
 
-## Objetivo
-Descreva o resultado de negocio esperado.
+## Goal
+Describe the expected business outcome.
 
-## Contexto
-Descreva o contexto funcional e tecnico.
+## Context
+Describe the functional and technical context.
 
-## Escopo
-- Inclui:
-- Nao inclui:
+## Scope
+- Includes:
+- Does not include:
 
-## Contrato esperado
-- Endpoint(s) afetados:
-- Altera request/response? (sim/nao):
-- Altera schema de banco? (sim/nao):
+## Expected Contract
+- Affected endpoint(s):
+- Changes request/response? (yes/no):
+- Changes database schema? (yes/no):
 
-## Criterios de aceitacao
+## Acceptance Criteria
 1.
 2.
 3.
 
-## Regras e restricoes
-- [ ] Nao editar migracoes Flyway existentes
-- [ ] Manter ProblemDetail para erros HTTP
-- [ ] Evitar acoplamento cross-context
+## Rules And Constraints
+- [ ] Do not edit existing Flyway migrations
+- [ ] Keep ProblemDetail for HTTP errors
+- [ ] Avoid cross-context coupling
 
-## Testes esperados
-- [ ] Unitario
+## Expected Tests
+- [ ] Unit
 - [ ] WebMvc
-- [ ] Integracao (quando aplicavel)
+- [ ] Integration when applicable
 
-## Riscos conhecidos
-Liste riscos e trade-offs.
+## Known Risks
+List risks and trade-offs.

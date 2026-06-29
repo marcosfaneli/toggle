@@ -1,43 +1,43 @@
 # Testing Guide - toggle-server
 
-Guia objetivo para contribuicoes com IA manterem confiabilidade.
+Objective guide for keeping AI-assisted contributions reliable.
 
-## Piramide de testes
+## Test Pyramid
 
-1. Unitarios (maioria)
-- Alvo: use cases, mappers e regras puras.
-- Ferramentas: JUnit 5 + Mockito.
+1. Unit tests (majority)
+- Target: use cases, mappers, and pure rules.
+- Tools: JUnit 5 + Mockito.
 
 2. Web slice
-- Alvo: contrato HTTP (status, payload, validacao).
-- Ferramenta: @WebMvcTest com dependencias mockadas.
+- Target: HTTP contract (status, payload, validation).
+- Tool: `@WebMvcTest` with mocked dependencies.
 
-3. Integracao (crescimento progressivo)
-- Alvo: persistencia, eventos e fluxo de delivery ponta a ponta.
-- Recomendacao: SpringBootTest + banco de teste consistente.
+3. Integration tests (progressive growth)
+- Target: persistence, events, and end-to-end delivery flow.
+- Recommendation: `@SpringBootTest` + consistent test database.
 
-## Quando escrever qual teste
+## When To Write Each Test
 
-- Mudou regra de negocio: unitario obrigatorio.
-- Mudou request/response/validacao: @WebMvcTest obrigatorio.
-- Mudou repositorio/query/evento: incluir ou ampliar teste de integracao.
+- Business rule changed: unit test required.
+- Request/response/validation changed: `@WebMvcTest` required.
+- Repository/query/event changed: include or expand integration tests.
 
-## Padrao de cenarios minimos
+## Minimum Scenario Pattern
 
-Para cada mudanca de comportamento, cobrir:
-1. Caminho feliz.
-2. Entrada invalida.
-3. Regra de negocio violada.
-4. Erro de dependencia externa (quando aplicavel).
+For each behavior change, cover:
+1. Happy path.
+2. Invalid input.
+3. Business rule violation.
+4. External dependency error when applicable.
 
-## Convencoes
+## Conventions
 
-- Nome de teste descritivo e orientado a comportamento.
-- Arrange/Act/Assert claro.
-- Um motivo de falha por teste.
+- Descriptive, behavior-oriented test names.
+- Clear Arrange/Act/Assert.
+- One failure reason per test.
 
-## Definition of Done de testes
+## Test Definition Of Done
 
-- Todos os testes locais passando em mvn clean verify.
-- Sem teste flaky introduzido.
-- Cobertura de novos caminhos criticos adicionada.
+- All local tests pass with `mvn clean verify`.
+- No flaky test introduced.
+- Coverage for new critical paths added.

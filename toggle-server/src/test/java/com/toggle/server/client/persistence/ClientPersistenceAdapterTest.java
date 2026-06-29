@@ -95,7 +95,7 @@ class ClientPersistenceAdapterTest {
         entity.setId(10L);
         entity.setPublicId("01SUBSCRIPTION000000000000");
         entity.setClientInstanceId(1L);
-        entity.setToggleName("novo-checkout");
+        entity.setToggleName("new-checkout");
         entity.setConsumeMode("LOCAL_CACHE");
         entity.setCreatedAt(NOW);
         return entity;

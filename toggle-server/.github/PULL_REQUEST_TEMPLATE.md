@@ -1,30 +1,30 @@
-## Resumo
-Descreva objetivamente o que mudou.
+## Summary
+Describe objectively what changed.
 
-## Tipo de mudanca
-- [ ] Correcao
-- [ ] Nova funcionalidade
-- [ ] Refatoracao sem mudanca funcional
-- [ ] Documentacao
+## Change Type
+- [ ] Fix
+- [ ] New feature
+- [ ] Refactoring without functional change
+- [ ] Documentation
 
-## Checklist tecnico
-- [ ] Mudanca pequena e focada
-- [ ] Sem quebra de contrato de API (ou quebra documentada)
-- [ ] Sem alteracao de migracao Flyway existente
-- [ ] ProblemDetail preservado para erros HTTP
-- [ ] Sem acoplamento cross-context indevido
+## Technical Checklist
+- [ ] Small and focused change
+- [ ] No API contract break, or the break is documented
+- [ ] No existing Flyway migration changed
+- [ ] ProblemDetail preserved for HTTP errors
+- [ ] No improper cross-context coupling
 
-## Testes
-- [ ] Unitarios adicionados/atualizados
-- [ ] WebMvc adicionados/atualizados
-- [ ] Integracao adicionados/atualizados (quando aplicavel)
-- [ ] mvn clean verify executado com sucesso
+## Tests
+- [ ] Unit tests added/updated
+- [ ] WebMvc tests added/updated
+- [ ] Integration tests added/updated when applicable
+- [ ] `mvn clean verify` completed successfully
 
-## Evidencias
-Inclua comandos executados e resultados relevantes.
+## Evidence
+Include commands executed and relevant results.
 
-## Documentacao
-- [ ] Atualizei documentacao relevante (README, ARCHITECTURE, etc.) quando houve mudanca de comportamento
+## Documentation
+- [ ] Relevant documentation updated (README, ARCHITECTURE, etc.) when behavior changed
 
-## Riscos e rollback
-Descreva riscos residuais e plano de rollback se necessario.
+## Risks And Rollback
+Describe residual risks and rollback plan when required.

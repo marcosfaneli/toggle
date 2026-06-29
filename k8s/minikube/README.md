@@ -1,34 +1,38 @@
-# Minikube validation
+# Minikube Validation
 
-Este diretório sobe o Switchboard em um cluster local Minikube com:
+This directory runs Switchboard in a local Minikube cluster with:
 
 - `toggle-server`
-- `toggle-client-simple` com 2 réplicas
+- `toggle-client-simple` with 2 replicas
 
-O server usa o MySQL já publicado pelo `docker compose` do projeto em `localhost:3306`. Dentro do Minikube, o host é acessado por `host.minikube.internal`, então o `DB_HOST` do server fica assim:
+The server uses the MySQL instance already exposed by the project
+`docker compose` setup on `localhost:3306`. Inside Minikube, the host is
+available through `host.minikube.internal`, so the server `DB_HOST` is:
 
 ```text
 host.minikube.internal
 ```
 
-O client registra o callback usando o IP real de cada pod:
+The client registers callbacks using the real IP address of each pod:
 
 ```text
 http://${POD_IP}:8082/internal/feature-toggles
 ```
 
-Isso é intencional. Para validar atualização de cache local em múltiplas réplicas, o callback não deve usar o `Service` do client, porque o `Service` balancearia a chamada e poderia atualizar só um pod.
+This is intentional. To validate local-cache updates across multiple replicas,
+the callback must not use the client `Service`, because the `Service` would load
+balance the call and could update only one pod.
 
-## Build das imagens
+## Build Images
 
-Na raiz do repositório:
+From the repository root:
 
 ```bash
 minikube image build -t toggle-server:minikube ./toggle-server
 minikube image build -t toggle-client-simple:minikube ./toggle-client-simple
 ```
 
-Alternativa, se sua versão do Minikube não tiver `image build`:
+Alternative, if your Minikube version does not support `image build`:
 
 ```bash
 eval "$(minikube docker-env)"
@@ -36,17 +40,17 @@ docker build -t toggle-server:minikube ./toggle-server
 docker build -t toggle-client-simple:minikube ./toggle-client-simple
 ```
 
-## Banco local
+## Local Database
 
-Antes de subir o cluster, confirme que o MySQL do Compose está rodando:
+Before starting the cluster, confirm that the Compose MySQL service is running:
 
 ```bash
 docker compose up -d mysql
 ```
 
-O server espera as credenciais padrão do projeto:
+The server expects the project default credentials:
 
-| Variável | Valor |
+| Variable | Value |
 | --- | --- |
 | `DB_HOST` | `host.minikube.internal` |
 | `DB_PORT` | `3306` |
@@ -54,9 +58,9 @@ O server espera as credenciais padrão do projeto:
 | `DB_USERNAME` | `toggle` |
 | `DB_PASSWORD` | `toggle` |
 
-## Deploy em etapas
+## Step-By-Step Deploy
 
-Suba namespace e server primeiro:
+Start the namespace and server first:
 
 ```bash
 kubectl apply -f k8s/minikube/namespace.yaml
@@ -65,86 +69,87 @@ kubectl apply -n toggle -f k8s/minikube/server.yaml
 kubectl -n toggle rollout status deployment/toggle-server
 ```
 
-Abra um port-forward para o server:
+Open a port-forward to the server:
 
 ```bash
 kubectl -n toggle port-forward svc/toggle-server 18080:8080
 ```
 
-Em outro terminal, crie os toggles consumidos pelo client:
+In another terminal, create the toggles consumed by the client:
 
 ```bash
 curl -i -X POST http://localhost:18080/toggles \
   -H 'Content-Type: application/json' \
-  -d '{"name":"novo-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"STRING","raw":"variant-a"}}'
+  -d '{"name":"new-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"STRING","raw":"variant-a"}}'
 
 curl -i -X POST http://localhost:18080/toggles \
   -H 'Content-Type: application/json' \
-  -d '{"name":"pagamento-v2","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"NUMBER","raw":"10"}}'
+  -d '{"name":"payment-v2","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"NUMBER","raw":"10"}}'
 ```
 
-Agora suba o client:
+Then start the client:
 
 ```bash
 kubectl apply -n toggle -f k8s/minikube/client.yaml
 kubectl -n toggle rollout status deployment/toggle-client-simple
 ```
 
-## Verificações
+## Verification
 
-Confirme que há duas instâncias registradas:
+Confirm that two instances are registered:
 
 ```bash
 curl -s 'http://localhost:18080/clients?serviceName=checkout-service'
 ```
 
-O retorno deve listar 2 registros `ACTIVE`, com `instanceId`, `podName` e `callbackUrl` diferentes.
+The response should list 2 `ACTIVE` records, with different `instanceId`,
+`podName`, and `callbackUrl` values.
 
-Atualize o toggle cacheado:
+Update the cached toggle:
 
 ```bash
-curl -i -X PATCH http://localhost:18080/toggles/novo-checkout \
+curl -i -X PATCH http://localhost:18080/toggles/new-checkout \
   -H 'Content-Type: application/json' \
   -d '{"enabled":false,"value":{"type":"STRING","raw":"variant-b"}}'
 ```
 
-Verifique no server que a entrega foi feita para todas as réplicas:
+Verify on the server that delivery was completed for every replica:
 
 ```bash
 kubectl -n toggle logs deployment/toggle-server | grep 'toggle_delivery'
 ```
 
-Procure por:
+Look for:
 
 ```text
 subscribersCount=2
 event=toggle_delivery_success
 ```
 
-Verifique nos clients que cada pod aplicou a atualização:
+Verify on the clients that each pod applied the update:
 
 ```bash
 kubectl -n toggle logs deployment/toggle-client-simple | grep 'Applied callback update'
 ```
 
-Para consultar uma réplica específica, liste os pods:
+To query a specific replica, list the pods:
 
 ```bash
 kubectl -n toggle get pods -l app.kubernetes.io/name=toggle-client-simple
 ```
 
-Depois faça port-forward para cada pod, um por vez:
+Then port-forward to each pod, one at a time:
 
 ```bash
 kubectl -n toggle port-forward pod/<client-pod-name> 18082:8082
-curl -s http://localhost:18082/internal/toggles/novo-checkout/resolve
+curl -s http://localhost:18082/internal/toggles/new-checkout/resolve
 ```
 
-O resultado esperado em cada pod é:
+The expected result for each pod is:
 
 ```json
 {
-  "name": "novo-checkout",
+  "name": "new-checkout",
   "mode": "LOCAL_CACHE",
   "found": true,
   "enabled": false,
@@ -153,20 +158,20 @@ O resultado esperado em cada pod é:
 }
 ```
 
-## Teste de escala
+## Scale Test
 
-Escale o client e repita a atualização:
+Scale the client and repeat the update:
 
 ```bash
 kubectl -n toggle scale deployment/toggle-client-simple --replicas=5
 kubectl -n toggle rollout status deployment/toggle-client-simple
 
-curl -i -X PATCH http://localhost:18080/toggles/novo-checkout \
+curl -i -X PATCH http://localhost:18080/toggles/new-checkout \
   -H 'Content-Type: application/json' \
   -d '{"enabled":true,"value":{"type":"STRING","raw":"variant-c"}}'
 ```
 
-Valide novamente:
+Validate again:
 
 ```bash
 curl -s 'http://localhost:18080/clients?serviceName=checkout-service'
@@ -174,15 +179,15 @@ kubectl -n toggle logs deployment/toggle-server | grep 'toggle_delivery'
 kubectl -n toggle logs deployment/toggle-client-simple | grep 'Applied callback update'
 ```
 
-## Aplicar tudo de uma vez
+## Apply Everything At Once
 
-Depois que os toggles já existem, também é possível aplicar tudo via Kustomize:
+After the toggles already exist, you can also apply everything with Kustomize:
 
 ```bash
 kubectl apply -k k8s/minikube
 ```
 
-## Limpeza
+## Cleanup
 
 ```bash
 kubectl delete namespace toggle

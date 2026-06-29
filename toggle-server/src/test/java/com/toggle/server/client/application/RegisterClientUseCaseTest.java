@@ -38,8 +38,8 @@ class RegisterClientUseCaseTest {
         var useCase = new RegisterClientUseCase(clientPersistenceAdapter, togglePersistenceAdapter, CLOCK, false);
         var command = commandWithCallback("http://localhost:8081/callback");
 
-        when(togglePersistenceAdapter.findAllByNames(List.of("novo-checkout")))
-                .thenReturn(List.of(aToggle("novo-checkout")));
+        when(togglePersistenceAdapter.findAllByNames(List.of("new-checkout")))
+                .thenReturn(List.of(aToggle("new-checkout")));
 
         assertThatThrownBy(() -> useCase.execute(command))
                 .isInstanceOf(InvalidCallbackUrlException.class)
@@ -62,8 +62,8 @@ class RegisterClientUseCaseTest {
                 ClientInstanceStatus.ACTIVE,
                 Instant.now(CLOCK));
 
-        when(togglePersistenceAdapter.findAllByNames(List.of("novo-checkout")))
-                .thenReturn(List.of(aToggle("novo-checkout")));
+        when(togglePersistenceAdapter.findAllByNames(List.of("new-checkout")))
+                .thenReturn(List.of(aToggle("new-checkout")));
         when(clientPersistenceAdapter.upsert(any(), any())).thenReturn(savedInstance);
 
         useCase.execute(command);
@@ -76,8 +76,8 @@ class RegisterClientUseCaseTest {
         var useCase = new RegisterClientUseCase(clientPersistenceAdapter, togglePersistenceAdapter, CLOCK, true);
         var command = commandWithCallback("   ");
 
-        when(togglePersistenceAdapter.findAllByNames(List.of("novo-checkout")))
-                .thenReturn(List.of(aToggle("novo-checkout")));
+        when(togglePersistenceAdapter.findAllByNames(List.of("new-checkout")))
+                .thenReturn(List.of(aToggle("new-checkout")));
 
         assertThatThrownBy(() -> useCase.execute(command))
                 .isInstanceOf(InvalidCallbackUrlException.class)
@@ -91,8 +91,8 @@ class RegisterClientUseCaseTest {
         var useCase = new RegisterClientUseCase(clientPersistenceAdapter, togglePersistenceAdapter, CLOCK, false);
         var command = commandWithCallback("http://[::1]:8081/callback");
 
-        when(togglePersistenceAdapter.findAllByNames(List.of("novo-checkout")))
-                .thenReturn(List.of(aToggle("novo-checkout")));
+        when(togglePersistenceAdapter.findAllByNames(List.of("new-checkout")))
+                .thenReturn(List.of(aToggle("new-checkout")));
 
         assertThatThrownBy(() -> useCase.execute(command))
                 .isInstanceOf(InvalidCallbackUrlException.class)
@@ -106,8 +106,8 @@ class RegisterClientUseCaseTest {
         var useCase = new RegisterClientUseCase(clientPersistenceAdapter, togglePersistenceAdapter, CLOCK, false);
         var command = commandWithCallback("http://100.64.10.10:8081/callback");
 
-        when(togglePersistenceAdapter.findAllByNames(List.of("novo-checkout")))
-                .thenReturn(List.of(aToggle("novo-checkout")));
+        when(togglePersistenceAdapter.findAllByNames(List.of("new-checkout")))
+                .thenReturn(List.of(aToggle("new-checkout")));
 
         assertThatThrownBy(() -> useCase.execute(command))
                 .isInstanceOf(InvalidCallbackUrlException.class)
@@ -121,8 +121,8 @@ class RegisterClientUseCaseTest {
         var useCase = new RegisterClientUseCase(clientPersistenceAdapter, togglePersistenceAdapter, CLOCK, true);
         var command = commandWithCallback("ftp://example.com/callback");
 
-        when(togglePersistenceAdapter.findAllByNames(List.of("novo-checkout")))
-                .thenReturn(List.of(aToggle("novo-checkout")));
+        when(togglePersistenceAdapter.findAllByNames(List.of("new-checkout")))
+                .thenReturn(List.of(aToggle("new-checkout")));
 
         assertThatThrownBy(() -> useCase.execute(command))
                 .isInstanceOf(InvalidCallbackUrlException.class)
@@ -136,8 +136,8 @@ class RegisterClientUseCaseTest {
         var useCase = new RegisterClientUseCase(clientPersistenceAdapter, togglePersistenceAdapter, CLOCK, true);
         var command = commandWithCallback("http://user:pass@example.com/callback");
 
-        when(togglePersistenceAdapter.findAllByNames(List.of("novo-checkout")))
-                .thenReturn(List.of(aToggle("novo-checkout")));
+        when(togglePersistenceAdapter.findAllByNames(List.of("new-checkout")))
+                .thenReturn(List.of(aToggle("new-checkout")));
 
         assertThatThrownBy(() -> useCase.execute(command))
                 .isInstanceOf(InvalidCallbackUrlException.class)
@@ -153,7 +153,7 @@ class RegisterClientUseCaseTest {
                 "checkout-7d8d4c7f6f-abcde",
                 "payments",
                 callbackUrl,
-                List.of(new RegisterClientCommand.SubscriptionCommand("novo-checkout", "LOCAL_CACHE")));
+                List.of(new RegisterClientCommand.SubscriptionCommand("new-checkout", "LOCAL_CACHE")));
     }
 
     private Toggle aToggle(String name) {

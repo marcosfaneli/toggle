@@ -2,7 +2,15 @@
 
 ![Switchboard](./switchboard-icon.svg)
 
-Feature Toggle Server - manage boolean feature flags across your microservices.
+Switchboard is a feature toggle platform for Spring-based microservices. It
+provides a central server for creating and updating feature flags, plus client
+applications and a reusable Spring Boot starter that register service instances,
+keep local toggle state in sync, and receive updates through HTTP callbacks.
+
+The project is currently under active development. The core MVP covers boolean
+toggles, optional typed values, client registration, heartbeat, local-cache
+updates, and Minikube validation, but the API and operational model may still
+change as the platform evolves.
 
 ## Stack
 
@@ -135,11 +143,11 @@ Applications consume it by adding the dependency and injecting
 `FeatureToggleClient`:
 
 ```java
-if (featureToggleClient.isEnabled("pagamento-v2")) {
+if (featureToggleClient.isEnabled("payment-v2")) {
     // new flow
 }
 
-featureToggleClient.getValue("pagamento-v2")
+featureToggleClient.getValue("payment-v2")
         .ifPresent(value -> {
             // value.type() and value.raw()
         });
@@ -151,10 +159,17 @@ remains intact as the historical/manual client implementation.
 
 ## Minikube
 
-Para validar o server e múltiplas réplicas do client em Kubernetes local, use os manifests e o roteiro em [`k8s/minikube`](./k8s/minikube/README.md).
+Use the manifests and walkthrough in [`k8s/minikube`](./k8s/minikube/README.md)
+to validate the server and multiple client replicas in a local Kubernetes
+cluster.
+
+## Documentation
+
+- [MVP technical specification](./doc/feature-toggle-mvp-technical-specification.md)
+- [MVP implementation stories](./doc/mvp-implementation-stories.md)
+- [Feature toggle flow](./doc/feature-toggle-flow.puml)
+- [Data model](./doc/feature-toggle-data-model.puml)
 
 ## Importing the API collection
 
 Import `insomnia-collection.json` into Insomnia to test the endpoints.
-
-.

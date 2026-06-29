@@ -1,46 +1,46 @@
 # Copilot Instructions - toggle-server
 
-Instrucoes operacionais para contribuicoes assistidas por IA neste repositorio.
+Operational instructions for AI-assisted contributions in this repository.
 
-## Contexto do projeto
+## Project Context
 
 - Stack: Java 25, Spring Boot 3.5, Maven, JPA, Flyway.
-- Dominios principais: toggle, client, delivery.
-- Arquitetura: web -> application -> persistence/domain.
+- Main domains: toggle, client, delivery.
+- Architecture: web -> application -> persistence/domain.
 
-## Prioridades
+## Priorities
 
-1. Correcao funcional e preservacao de contrato.
-2. Mudancas pequenas e rastreaveis.
-3. Testabilidade e legibilidade.
-4. Coerencia com regras de contribuicao existentes.
+1. Functional correctness and contract preservation.
+2. Small, traceable changes.
+3. Testability and readability.
+4. Consistency with existing contribution rules.
 
-## Guardrails obrigatorios
+## Mandatory Guardrails
 
-1. Sempre adicionar/ajustar testes quando houver mudanca de comportamento.
-2. Nunca alterar migracoes Flyway existentes em src/main/resources/db/migration.
-3. Preservar tratamento de erro baseado em ProblemDetail.
-4. Evitar acoplamento cross-context entre toggle, client e delivery.
-5. Evitar N+1 em consultas potencialmente custosas.
+1. Always add or adjust tests when behavior changes.
+2. Never change existing Flyway migrations in `src/main/resources/db/migration`.
+3. Preserve ProblemDetail-based error handling.
+4. Avoid cross-context coupling between toggle, client, and delivery.
+5. Avoid N+1 patterns in potentially expensive queries.
 
-## Convenios de implementacao
+## Implementation Conventions
 
-- Preferir constructor injection.
-- Evitar refatoracao ampla sem necessidade funcional.
-- Manter APIs publicas estaveis salvo pedido explicito.
-- Em mudancas assincronas, garantir configuracao explicita de executor quando aplicavel.
+- Prefer constructor injection.
+- Avoid broad refactoring without functional need.
+- Keep public APIs stable unless explicitly requested otherwise.
+- In asynchronous changes, ensure explicit executor configuration when applicable.
 
-## Regras de revisao
+## Review Rules
 
-Antes de concluir qualquer tarefa:
-1. Executar mvn clean verify.
-2. Reportar arquivos alterados e riscos residuais.
-3. Confirmar que nao houve quebra de contrato de API.
-4. Confirmar que regras deste arquivo e de .instructions.md foram atendidas.
+Before completing any task:
+1. Run `mvn clean verify`.
+2. Report changed files and residual risks.
+3. Confirm there was no API contract break.
+4. Confirm the rules in this file and `.instructions.md` were followed.
 
-## Quando pedir decisao humana
+## When To Ask For Human Decision
 
-- Mudanca de contrato de API.
-- Trade-off de arquitetura entre contextos.
-- Mudanca sensivel de seguranca.
-- Comportamento ambiguo nao coberto por testes/requisitos.
+- API contract change.
+- Architecture trade-off between contexts.
+- Sensitive security change.
+- Ambiguous behavior not covered by tests or requirements.

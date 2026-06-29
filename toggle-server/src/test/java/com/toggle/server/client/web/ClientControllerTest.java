@@ -70,7 +70,7 @@ class ClientControllerTest {
     private static Toggle aToggle() {
         return new Toggle(
                 "01TOGGLE0000000000000000000",
-                "novo-checkout",
+                "new-checkout",
                 "checkout-service",
                 true,
                 1L,
@@ -88,13 +88,13 @@ class ClientControllerTest {
                 "http://10.42.1.25:8080/internal/feature-toggles",
                 "ACTIVE",
                 NOW,
-                List.of(new ClientView.SubscriptionView("novo-checkout", "LOCAL_CACHE")));
+                List.of(new ClientView.SubscriptionView("new-checkout", "LOCAL_CACHE")));
     }
 
     private static Toggle aToggleWithValue() {
         return new Toggle(
                 "01TOGGLE0000000000000000001",
-                "pagamento-v2",
+                "payment-v2",
                 "checkout-service",
                 true,
                 2L,
@@ -116,7 +116,7 @@ class ClientControllerTest {
                     "namespace": "payments",
                     "callbackUrl": "http://10.42.1.25:8080/internal/feature-toggles",
                     "subscriptions": [
-                        { "toggleName": "novo-checkout", "consumeMode": "LOCAL_CACHE" }
+                        { "toggleName": "new-checkout", "consumeMode": "LOCAL_CACHE" }
                     ]
                 }
                 """;
@@ -128,7 +128,7 @@ class ClientControllerTest {
                 .andExpect(jsonPath("$.serviceName").value("checkout-service"))
                 .andExpect(jsonPath("$.instanceId").value("checkout-7d8d4c7f6f-abcde"))
                 .andExpect(jsonPath("$.toggles").isArray())
-                .andExpect(jsonPath("$.toggles[0].name").value("novo-checkout"))
+                .andExpect(jsonPath("$.toggles[0].name").value("new-checkout"))
                 .andExpect(jsonPath("$.toggles[0].enabled").value(true))
                 .andExpect(jsonPath("$.toggles[0].version").value(1))
                 .andExpect(jsonPath("$.toggles[0].value").doesNotExist());
@@ -148,7 +148,7 @@ class ClientControllerTest {
                     "namespace": "payments",
                     "callbackUrl": "http://10.42.1.25:8080/internal/feature-toggles",
                     "subscriptions": [
-                        { "toggleName": "pagamento-v2", "consumeMode": "REMOTE_ALWAYS" }
+                        { "toggleName": "payment-v2", "consumeMode": "REMOTE_ALWAYS" }
                     ]
                 }
                 """;
@@ -202,7 +202,7 @@ class ClientControllerTest {
                     "namespace": "payments",
                     "callbackUrl": "http:///invalid",
                     "subscriptions": [
-                        { "toggleName": "novo-checkout", "consumeMode": "LOCAL_CACHE" }
+                        { "toggleName": "new-checkout", "consumeMode": "LOCAL_CACHE" }
                     ]
                 }
                 """;
@@ -226,7 +226,7 @@ class ClientControllerTest {
                     "namespace": "payments",
                     "callbackUrl": "http://10.42.1.25:8080/internal/feature-toggles",
                     "subscriptions": [
-                        { "toggleName": "novo-checkout", "consumeMode": "INVALID_MODE" }
+                        { "toggleName": "new-checkout", "consumeMode": "INVALID_MODE" }
                     ]
                 }
                 """;
@@ -248,7 +248,7 @@ class ClientControllerTest {
                     "namespace": "payments",
                     "callbackUrl": "http://10.42.1.25:8080/internal/feature-toggles",
                     "subscriptions": [
-                        { "toggleName": "novo-checkout", "consumeMode": "LOCAL_CACHE" }
+                        { "toggleName": "new-checkout", "consumeMode": "LOCAL_CACHE" }
                     ]
                 }
                 """;
@@ -273,7 +273,7 @@ class ClientControllerTest {
                     "namespace": "payments",
                     "callbackUrl": "http://10.42.1.25:8080/internal/feature-toggles",
                     "subscriptions": [
-                        { "toggleName": "novo-checkout", "consumeMode": "LOCAL_CACHE" }
+                        { "toggleName": "new-checkout", "consumeMode": "LOCAL_CACHE" }
                     ]
                 }
                 """;
@@ -295,7 +295,7 @@ class ClientControllerTest {
                 .andExpect(jsonPath("$[0].instanceId").value("checkout-7d8d4c7f6f-abcde"))
                 .andExpect(jsonPath("$[0].serviceName").value("checkout-service"))
                 .andExpect(jsonPath("$[0].subscriptions").isArray())
-                .andExpect(jsonPath("$[0].subscriptions[0].toggleName").value("novo-checkout"))
+                .andExpect(jsonPath("$[0].subscriptions[0].toggleName").value("new-checkout"))
                 .andExpect(jsonPath("$[0].subscriptions[0].consumeMode").value("LOCAL_CACHE"));
     }
 
@@ -309,7 +309,7 @@ class ClientControllerTest {
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].instanceId").value("checkout-7d8d4c7f6f-abcde"))
                 .andExpect(jsonPath("$[0].serviceName").value("checkout-service"))
-                .andExpect(jsonPath("$[0].subscriptions[0].toggleName").value("novo-checkout"));
+                .andExpect(jsonPath("$[0].subscriptions[0].toggleName").value("new-checkout"));
     }
 
     @Test
