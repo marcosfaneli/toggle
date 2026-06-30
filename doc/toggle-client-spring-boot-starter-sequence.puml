@@ -1,0 +1,150 @@
+@startuml
+' Sequence diagram for toggle-client-spring-boot-starter
+
+title Toggle Client Spring Boot Starter - Runtime Sequence
+
+actor "Spring Application" as App
+participant "Spring Boot\nAutoConfiguration" as Spring
+participant "ToggleClientAutoConfiguration" as AutoConfig
+participant "ClientLifecycleService" as Lifecycle
+participant "FeatureToggleClient\n(ToggleRuntimeService)" as Runtime
+participant "ToggleServerClient\n(HttpToggleServerClient)" as ServerClient
+participant "Toggle Server API" as Server
+collections "ToggleCache" as Cache
+participant "FeatureToggleCallbackController" as Callback
+collections "TaskScheduler" as Scheduler
+
+== Context initialization ==
+App -> Spring: Start application context
+Spring -> AutoConfig: Load auto-configuration\nif servlet web app and enabled=true
+AutoConfig -> AutoConfig: Bind feature.toggles properties
+AutoConfig -> ServerClient: Create RestClient-based client
+AutoConfig -> Cache: Create in-memory cache
+AutoConfig -> Runtime: Create FeatureToggleClient bean
+AutoConfig -> Lifecycle: Create lifecycle service
+AutoConfig -> Callback: Expose PUT /internal/feature-toggles/{toggleName}
+Spring --> App: Application context ready
+
+== Registration and bootstrap ==
+Spring -> Lifecycle: ApplicationReadyEvent
+activate Lifecycle
+Lifecycle -> ServerClient: registerAndGetSnapshot()
+activate ServerClient
+ServerClient -> Server: POST /clients/register\n(serviceName, instanceId, podName, namespace,\ncallbackUrl, consumed toggles)
+
+alt Registration accepted
+  Server --> ServerClient: Current toggle snapshot list
+  ServerClient -> ServerClient: registered = true
+  ServerClient --> Lifecycle: List<ToggleSnapshot>
+  deactivate ServerClient
+  loop for each snapshot returned by registration
+    Lifecycle -> Cache: putIfNewer(snapshot)
+  end
+  loop for each configured consumed toggle
+    Lifecycle -> ServerClient: fetchToggleByName(toggleName)
+    activate ServerClient
+    ServerClient -> Server: GET /toggles/{name}
+    alt Toggle exists
+      Server --> ServerClient: Toggle response
+      ServerClient --> Lifecycle: Optional<ToggleSnapshot>
+      Lifecycle -> Cache: putIfNewer(snapshot)
+    else Toggle missing or request failed
+      ServerClient --> Lifecycle: Optional.empty()
+    end
+    deactivate ServerClient
+  end
+else No consumed toggles, rejected registration, or empty response
+  ServerClient -> ServerClient: registered = false
+  ServerClient --> Lifecycle: empty snapshot list
+  deactivate ServerClient
+  Lifecycle -> Lifecycle: Log warning and rely on heartbeat retry
+end
+
+Lifecycle -> Scheduler: scheduleWithFixedDelay(sendHeartbeat,\nheartbeatIntervalMs)
+deactivate Lifecycle
+
+== Periodic heartbeat ==
+loop every heartbeatIntervalMs
+  Scheduler -> Lifecycle: sendHeartbeat()
+  activate Lifecycle
+  Lifecycle -> ServerClient: isRegistered()
+  alt Registered
+    Lifecycle -> ServerClient: heartbeat()
+    activate ServerClient
+    ServerClient -> Server: POST /clients/heartbeat\n(serviceName, instanceId)
+    Server --> ServerClient: 2xx
+    deactivate ServerClient
+  else Not registered
+    Lifecycle -> ServerClient: registerAndGetSnapshot()
+    note right of Lifecycle
+    Heartbeat retries bootstrap when the client
+    is not marked as registered locally.
+    end note
+  end
+  deactivate Lifecycle
+end
+
+== Runtime toggle usage ==
+App -> Runtime: isEnabled(toggleName)\nor getValue(toggleName)\nor resolve(toggleName)
+activate Runtime
+Runtime -> Runtime: Read consume mode from\nfeature.toggles.consumed
+
+alt Toggle is not configured
+  Runtime --> App: IllegalArgumentException
+else ConsumeMode = LOCAL_CACHE
+  Runtime -> Cache: get(toggleName)
+  alt Cache hit
+    Cache --> Runtime: ToggleSnapshot
+    Runtime --> App: ToggleResolution\nsource=CACHE
+  else Cache miss
+    Cache --> Runtime: empty
+    Runtime --> App: Missing ToggleResolution\nsource=CACHE
+  end
+else ConsumeMode = REMOTE_ALWAYS
+  Runtime -> ServerClient: fetchToggleByName(toggleName)
+  activate ServerClient
+  ServerClient -> Server: GET /toggles/{name}
+  alt Toggle exists
+    Server --> ServerClient: Toggle response
+    ServerClient --> Runtime: Optional<ToggleSnapshot>
+    Runtime -> Cache: putIfNewer(snapshot)
+    Runtime --> App: ToggleResolution\nsource=REMOTE
+  else Toggle missing or request failed
+    ServerClient --> Runtime: Optional.empty()
+    Runtime --> App: Missing ToggleResolution\nsource=REMOTE
+  end
+  deactivate ServerClient
+end
+deactivate Runtime
+
+== Server callback update ==
+Server -> Callback: PUT /internal/feature-toggles/{toggleName}\n(enabled, value?, version, updatedAt)
+activate Callback
+Callback -> Callback: Convert request to ToggleSnapshot
+Callback -> Cache: putIfNewer(snapshot)
+alt Incoming version is newer or same version
+  Cache --> Callback: Cache updated
+else Incoming version is stale
+  Cache --> Callback: Existing snapshot kept
+end
+Callback --> Server: HTTP 200 OK
+deactivate Callback
+
+== Shutdown ==
+App -> Lifecycle: close()
+activate Lifecycle
+Lifecycle -> Scheduler: cancel heartbeat task
+Lifecycle -> ServerClient: isRegistered()
+alt Registered
+  Lifecycle -> ServerClient: deregister()
+  activate ServerClient
+  ServerClient -> Server: DELETE /clients/register/{instanceId}\n?serviceName={serviceName}
+  Server --> ServerClient: 2xx
+  ServerClient -> ServerClient: registered = false
+  deactivate ServerClient
+else Not registered
+  Lifecycle -> Lifecycle: Skip deregistration
+end
+deactivate Lifecycle
+
+@enduml
