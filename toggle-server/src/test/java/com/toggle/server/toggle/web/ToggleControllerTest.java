@@ -77,7 +77,7 @@ class ToggleControllerTest {
                 mockMvc.perform(get("/toggles/new-checkout"))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.name").value("new-checkout"))
-                                .andExpect(jsonPath("$.ownerServiceName").value("checkout-service"))
+                                .andExpect(jsonPath("$.maintainer").value("checkout-service"))
                                 .andExpect(jsonPath("$.enabled").value(true))
                                 .andExpect(jsonPath("$.version").value(1))
                                 .andExpect(jsonPath("$.value.type").value("STRING"))
@@ -98,7 +98,7 @@ class ToggleControllerTest {
                 .content(body))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name").value("new-checkout"))
-                .andExpect(jsonPath("$.ownerServiceName").value("checkout-service"))
+                .andExpect(jsonPath("$.maintainer").value("checkout-service"))
                 .andExpect(jsonPath("$.enabled").value(true))
                 .andExpect(jsonPath("$.version").value(1))
                 .andExpect(jsonPath("$.value").doesNotExist());
@@ -158,13 +158,13 @@ class ToggleControllerTest {
     private static Stream<String> invalidValuePayloads() {
         return Stream.of(
                 """
-                        {"name":"new-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"BOOLEAN","raw":"true"}}
+                        {"name":"new-checkout","maintainer":"checkout-service","enabled":true,"value":{"type":"BOOLEAN","raw":"true"}}
                         """,
                 """
-                        {"name":"new-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"","raw":"x"}}
+                        {"name":"new-checkout","maintainer":"checkout-service","enabled":true,"value":{"type":"","raw":"x"}}
                         """,
                 """
-                        {"name":"new-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"STRING","raw":""}}
+                        {"name":"new-checkout","maintainer":"checkout-service","enabled":true,"value":{"type":"STRING","raw":""}}
                         """
         );
     }
@@ -204,7 +204,7 @@ class ToggleControllerTest {
     }
 
     @Test
-    void shouldReturn400WhenOwnerServiceNameIsBlank() throws Exception {
+    void shouldReturn400WhenMaintainerIsBlank() throws Exception {
         var request = new CreateToggleRequest("new-checkout", "", true, null);
         var body = Objects.requireNonNull(objectMapper.writeValueAsString(request));
 
@@ -227,10 +227,10 @@ class ToggleControllerTest {
         when(listTogglesUseCase.execute(any(ListTogglesQuery.class), any(Pageable.class))).thenReturn(slice);
 
         mockMvc.perform(get("/toggles")
-                .param("ownerServiceName", "checkout-service"))
+                .param("maintainer", "checkout-service"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].name").value("new-checkout"))
-                .andExpect(jsonPath("$.content[0].ownerServiceName").value("checkout-service"))
+                .andExpect(jsonPath("$.content[0].maintainer").value("checkout-service"))
                 .andExpect(jsonPath("$.number").value(0))
                 .andExpect(jsonPath("$.size").value(20))
                 .andExpect(jsonPath("$.first").value(true))
@@ -247,7 +247,7 @@ class ToggleControllerTest {
         when(listTogglesUseCase.execute(any(ListTogglesQuery.class), any(Pageable.class))).thenReturn(slice);
 
         mockMvc.perform(get("/toggles")
-                .param("ownerServiceName", "checkout-service")
+                .param("maintainer", "checkout-service")
                 .param("enabled", "true"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].enabled").value(true));
@@ -262,14 +262,14 @@ class ToggleControllerTest {
         when(listTogglesUseCase.execute(any(ListTogglesQuery.class), any(Pageable.class))).thenReturn(slice);
 
         mockMvc.perform(get("/toggles")
-                .param("ownerServiceName", "checkout-service")
+                .param("maintainer", "checkout-service")
                 .param("enabled", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].enabled").value(false));
     }
 
         @Test
-        void shouldFilterByEnabledWithoutOwnerServiceName() throws Exception {
+        void shouldFilterByEnabledWithoutMaintainer() throws Exception {
                 var toggle = new Toggle("01ID", "enabled-toggle", "checkout-service", true, 1L, Instant.now(), null);
                 var pageable = PageRequest.of(0, 20);
                 var slice = newSlice(pageable, false, toggle);
@@ -280,13 +280,13 @@ class ToggleControllerTest {
                                 .param("enabled", "true"))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.content[0].enabled").value(true))
-                                .andExpect(header().string("Link", Objects.requireNonNull(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("ownerServiceName=")))));
+                                .andExpect(header().string("Link", Objects.requireNonNull(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("maintainer=")))));
         }
 
     @Test
     void shouldReturn400WhenEnabledParamIsInvalid() throws Exception {
         mockMvc.perform(get("/toggles")
-                .param("ownerServiceName", "checkout-service")
+                .param("maintainer", "checkout-service")
                 .param("enabled", "maybe"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
@@ -296,7 +296,7 @@ class ToggleControllerTest {
     }
 
     @Test
-        void shouldReturnPagedTogglesWhenOwnerServiceNameIsMissing() throws Exception {
+        void shouldReturnPagedTogglesWhenMaintainerIsMissing() throws Exception {
                 var toggle = new Toggle("01ID", "new-checkout", "checkout-service", true, 1L, Instant.now(), null);
                                 var pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "updatedAt"));
                 var slice = newSlice(pageable, false, toggle);
@@ -306,7 +306,7 @@ class ToggleControllerTest {
         mockMvc.perform(get("/toggles"))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.content[0].name").value("new-checkout"))
-                                .andExpect(header().string("Link", Objects.requireNonNull(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("ownerServiceName=")))));
+                                .andExpect(header().string("Link", Objects.requireNonNull(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("maintainer=")))));
 
                 var queryCaptor = ArgumentCaptor.forClass(ListTogglesQuery.class);
                 var pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
@@ -316,7 +316,7 @@ class ToggleControllerTest {
                 var capturedQuery = queryCaptor.getValue();
                 var capturedPageable = pageableCaptor.getValue();
 
-                org.junit.jupiter.api.Assertions.assertNull(capturedQuery.ownerServiceName());
+                org.junit.jupiter.api.Assertions.assertNull(capturedQuery.maintainer());
                 org.junit.jupiter.api.Assertions.assertNull(capturedQuery.enabled());
                 org.junit.jupiter.api.Assertions.assertEquals(0, capturedPageable.getPageNumber());
                 org.junit.jupiter.api.Assertions.assertEquals(20, capturedPageable.getPageSize());
@@ -353,7 +353,7 @@ class ToggleControllerTest {
         @Test
         void shouldReturn400WhenPageSizeIsTooLarge() throws Exception {
                 mockMvc.perform(get("/toggles")
-                                .param("ownerServiceName", "checkout-service")
+                                .param("maintainer", "checkout-service")
                                 .param("size", "101"))
                                 .andExpect(status().isBadRequest())
                                 .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
@@ -371,7 +371,7 @@ class ToggleControllerTest {
         when(listTogglesUseCase.execute(any(ListTogglesQuery.class), any(Pageable.class))).thenReturn(slice);
 
         mockMvc.perform(get("/toggles")
-                .param("ownerServiceName", "checkout-service"))
+                .param("maintainer", "checkout-service"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Link", Objects.requireNonNull(org.hamcrest.Matchers.containsString("rel=\"next\""))));
     }
@@ -390,10 +390,26 @@ class ToggleControllerTest {
 
         mockMvc.perform(patch("/toggles/new-checkout")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
-                                .content("{\"ownerServiceName\":\"checkout-service\",\"enabled\":false}"))
+                                .content("{\"maintainer\":\"checkout-service\",\"enabled\":false}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.enabled").value(false))
                 .andExpect(jsonPath("$.version").value(2));
+    }
+
+    @Test
+    void shouldMapMaintainerOnUpdate() throws Exception {
+        var toggle = new Toggle("01ID", "new-checkout", "platform-team", false, 2L, Instant.now(), null);
+        when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
+
+        mockMvc.perform(patch("/toggles/new-checkout")
+                .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
+                .content("{\"maintainer\":\"platform-team\",\"enabled\":false}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.maintainer").value("platform-team"));
+
+        var commandCaptor = ArgumentCaptor.forClass(UpdateToggleCommand.class);
+        verify(updateToggleUseCase).execute(commandCaptor.capture());
+        org.junit.jupiter.api.Assertions.assertEquals("platform-team", commandCaptor.getValue().maintainer());
     }
 
     @Test
@@ -404,7 +420,7 @@ class ToggleControllerTest {
 
         mockMvc.perform(patch("/toggles/limite")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
-                .content("{\"ownerServiceName\":\"api-gateway\",\"value\":{\"type\":\"NUMBER\",\"raw\":\"99\"}}"))
+                .content("{\"maintainer\":\"api-gateway\",\"value\":{\"type\":\"NUMBER\",\"raw\":\"99\"}}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.value.type").value("NUMBER"))
                 .andExpect(jsonPath("$.value.raw").value("99"));
@@ -417,7 +433,7 @@ class ToggleControllerTest {
 
         mockMvc.perform(patch("/toggles/new-checkout")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
-                .content("{\"ownerServiceName\":\"checkout-service\",\"value\":null}"))
+                .content("{\"maintainer\":\"checkout-service\",\"value\":null}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.value").doesNotExist());
     }
@@ -430,14 +446,14 @@ class ToggleControllerTest {
 
         mockMvc.perform(patch("/toggles/new-checkout")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
-                .content("{\"ownerServiceName\":\"checkout-service\",\"enabled\":false}"))
+                .content("{\"maintainer\":\"checkout-service\",\"enabled\":false}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.value.type").value("STRING"))
                 .andExpect(jsonPath("$.value.raw").value("enabled"));
     }
 
         @Test
-        void shouldUpdateWithoutOwnerServiceNameAndReturn200() throws Exception {
+        void shouldUpdateWithoutMaintainerAndReturn200() throws Exception {
                 var toggle = new Toggle("01ID", "new-checkout", "checkout-service", false, 2L, Instant.now(), null);
                 when(updateToggleUseCase.execute(any(UpdateToggleCommand.class))).thenReturn(toggle);
 
@@ -456,7 +472,7 @@ class ToggleControllerTest {
 
         mockMvc.perform(patch("/toggles/inexistente")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
-                .content("{\"ownerServiceName\":\"checkout-service\",\"enabled\":true}"))
+                .content("{\"maintainer\":\"checkout-service\",\"enabled\":true}"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
                 .andExpect(jsonPath("$.status").value(404))
@@ -468,7 +484,19 @@ class ToggleControllerTest {
     void shouldReturn400WhenPatchValueTypeIsInvalid() throws Exception {
         mockMvc.perform(patch("/toggles/new-checkout")
                 .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
-                                .content("{\"ownerServiceName\":\"checkout-service\",\"value\":{\"type\":\"BOOLEAN\",\"raw\":\"true\"}}"))
+                                .content("{\"maintainer\":\"checkout-service\",\"value\":{\"type\":\"BOOLEAN\",\"raw\":\"true\"}}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.detail").exists())
+                .andExpect(jsonPath("$.instance").exists());
+    }
+
+    @Test
+    void shouldReturn400WhenPatchMaintainerIsBlank() throws Exception {
+        mockMvc.perform(patch("/toggles/new-checkout")
+                .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
+                .content("{\"maintainer\":\" \",\"enabled\":true}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
                 .andExpect(jsonPath("$.status").value(400))

@@ -15,7 +15,7 @@ class CreateToggleCommandMapper {
         }
         return new CreateToggleCommand(
                 request.name(),
-                request.ownerServiceName(),
+                request.maintainer(),
                 request.enabled(),
                 valueCommand);
     }

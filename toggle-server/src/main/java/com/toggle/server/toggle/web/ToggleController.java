@@ -69,7 +69,7 @@ public class ToggleController {
 
     @GetMapping
     public ResponseEntity<PagedToggleResponse> list(
-            @RequestParam(required = false) String ownerServiceName,
+            @RequestParam(required = false) String maintainer,
             @RequestParam(required = false) Boolean enabled,
             @ParameterObject
             @PageableDefault(size = 20, sort = SORT_PROPERTY_UPDATED_AT, direction = Sort.Direction.DESC) Pageable pageable,
@@ -81,8 +81,8 @@ public class ToggleController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "size must be <= " + maxPageSize);
         }
 
-        var slice = listTogglesUseCase.execute(new ListTogglesQuery(ownerServiceName, enabled), normalizedPageable);
-        var links = linkBuilder.buildLinks(request, ownerServiceName, enabled, slice, normalizedPageable);
+        var slice = listTogglesUseCase.execute(new ListTogglesQuery(maintainer, enabled), normalizedPageable);
+        var links = linkBuilder.buildLinks(request, maintainer, enabled, slice, normalizedPageable);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.LINK, String.join(", ", links))
@@ -108,8 +108,9 @@ public class ToggleController {
             @PathVariable String name,
             @Valid @RequestBody UpdateToggleRequest request) {
         log.info(
-                "event=toggle_update_requested name={} enabled={} hasValue={}",
+                "event=toggle_update_requested name={} maintainer={} enabled={} hasValue={}",
                 name,
+                request.getMaintainer(),
                 request.getEnabled(),
                 request.getValue() != null);
         return ResponseEntity.ok(

@@ -2,7 +2,7 @@ package com.toggle.server.toggle.application;
 
 public record CreateToggleCommand(
         String name,
-        String ownerServiceName,
+        String maintainer,
         boolean enabled,
         ToggleValueCommand value) {
 

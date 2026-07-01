@@ -10,7 +10,7 @@ import java.time.Instant;
 public record ToggleResponse(
         String id,
         String name,
-        String ownerServiceName,
+        String maintainer,
         boolean enabled,
         long version,
     Instant updatedAt,
@@ -27,7 +27,7 @@ public record ToggleResponse(
         return new ToggleResponse(
                 toggle.publicId(),
                 toggle.name(),
-                toggle.ownerServiceName(),
+                toggle.maintainer(),
                 toggle.enabled(),
                 toggle.version(),
                 toggle.updatedAt(),

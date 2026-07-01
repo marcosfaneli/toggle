@@ -13,26 +13,26 @@ import java.util.Objects;
 @Component
 class TogglePaginationLinkBuilder {
 
-    List<String> buildLinks(HttpServletRequest request, String ownerServiceName, Boolean enabled,
+    List<String> buildLinks(HttpServletRequest request, String maintainer, Boolean enabled,
                             Slice<?> slice, Pageable pageable) {
         var links = new ArrayList<String>();
-        links.add(link(pageUri(request, ownerServiceName, enabled, pageable.getPageSize(), 0), "first"));
+        links.add(link(pageUri(request, maintainer, enabled, pageable.getPageSize(), 0), "first"));
         if (!slice.isFirst()) {
-            links.add(link(pageUri(request, ownerServiceName, enabled, pageable.getPageSize(), pageable.getPageNumber() - 1), "prev"));
+            links.add(link(pageUri(request, maintainer, enabled, pageable.getPageSize(), pageable.getPageNumber() - 1), "prev"));
         }
         if (slice.hasNext()) {
-            links.add(link(pageUri(request, ownerServiceName, enabled, pageable.getPageSize(), pageable.getPageNumber() + 1), "next"));
+            links.add(link(pageUri(request, maintainer, enabled, pageable.getPageSize(), pageable.getPageNumber() + 1), "next"));
         }
         return links;
     }
 
-    private String pageUri(HttpServletRequest request, String ownerServiceName, Boolean enabled, int size, int page) {
+    private String pageUri(HttpServletRequest request, String maintainer, Boolean enabled, int size, int page) {
         var uri = Objects.requireNonNull(request.getRequestURL().toString());
         var builder = UriComponentsBuilder.fromUriString(uri)
                 .queryParam("size", size)
                 .queryParam("page", page);
-        if (ownerServiceName != null && !ownerServiceName.isBlank()) {
-            builder.queryParam("ownerServiceName", ownerServiceName);
+        if (maintainer != null && !maintainer.isBlank()) {
+            builder.queryParam("maintainer", maintainer);
         }
         if (enabled != null) {
             builder.queryParam("enabled", enabled);

@@ -40,16 +40,21 @@ public class TogglePersistenceAdapter {
     }
 
     @Transactional(readOnly = true)
-    public Slice<Toggle> findAll(String ownerServiceName, Boolean enabled, Pageable pageable) {
-        var hasOwnerFilter = ownerServiceName != null && !ownerServiceName.isBlank();
+    public List<String> findMaintainers() {
+        return repository.findDistinctMaintainers();
+    }
 
-        if (hasOwnerFilter && enabled != null) {
-            return repository.findByOwnerServiceNameAndEnabled(ownerServiceName, enabled, pageable)
+    @Transactional(readOnly = true)
+    public Slice<Toggle> findAll(String maintainer, Boolean enabled, Pageable pageable) {
+        var hasMaintainerFilter = maintainer != null && !maintainer.isBlank();
+
+        if (hasMaintainerFilter && enabled != null) {
+            return repository.findByMaintainerAndEnabled(maintainer, enabled, pageable)
                     .map(this::toDomain);
         }
 
-        if (hasOwnerFilter) {
-            return repository.findByOwnerServiceName(ownerServiceName, pageable)
+        if (hasMaintainerFilter) {
+            return repository.findByMaintainer(maintainer, pageable)
                     .map(this::toDomain);
         }
 
@@ -67,7 +72,7 @@ public class TogglePersistenceAdapter {
         var entity = new ToggleEntity();
         entity.setPublicId(UlidCreator.getMonotonicUlid().toString());
         entity.setName(command.name());
-        entity.setOwnerServiceName(command.ownerServiceName());
+        entity.setMaintainer(command.maintainer());
         entity.setEnabled(command.enabled());
         entity.setVersion(1L);
         entity.setUpdatedAt(Instant.now(clock));
@@ -100,6 +105,10 @@ public class TogglePersistenceAdapter {
             entity.setEnabled(command.enabled());
         }
 
+        if (command.maintainer() != null) {
+            entity.setMaintainer(command.maintainer());
+        }
+
         switch (command.valueUpdate()) {
             case UpdateToggleCommand.ValueUpdate.Keep ignored -> {}
             case UpdateToggleCommand.ValueUpdate.Remove ignored -> entity.setValue(null);
@@ -124,9 +133,10 @@ public class TogglePersistenceAdapter {
 
         var saved = toDomain(repository.save(entity));
         log.info(
-                "event=toggle_updated name={} version={} enabled={} hasValue={}",
+                "event=toggle_updated name={} version={} maintainer={} enabled={} hasValue={}",
                 saved.name(),
                 saved.version(),
+                saved.maintainer(),
                 saved.enabled(),
                 saved.value() != null);
         return saved;
@@ -155,7 +165,7 @@ public class TogglePersistenceAdapter {
         return new Toggle(
                 entity.getPublicId(),
                 entity.getName(),
-                entity.getOwnerServiceName(),
+                entity.getMaintainer(),
                 entity.isEnabled(),
                 entity.getVersion(),
                 entity.getUpdatedAt(),

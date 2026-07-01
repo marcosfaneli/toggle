@@ -2,7 +2,7 @@ package com.toggle.server.delivery.infrastructure;
 
 public record ToggleCallbackPayload(
         String name,
-        String ownerServiceName,
+        String maintainer,
         boolean enabled,
         long version,
         ValuePayload value) {

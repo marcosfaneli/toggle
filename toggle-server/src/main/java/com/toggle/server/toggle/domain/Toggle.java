@@ -5,7 +5,7 @@ import java.time.Instant;
 public record Toggle(
         String publicId,
         String name,
-        String ownerServiceName,
+        String maintainer,
         boolean enabled,
         long version,
         Instant updatedAt,

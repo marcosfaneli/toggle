@@ -7,15 +7,16 @@ import jakarta.validation.constraints.Pattern;
 
 public class UpdateToggleRequest {
 
-    private String ownerServiceName;
+    @Pattern(regexp = ".*\\S.*", message = "must not be blank")
+    private String maintainer;
     private Boolean enabled;
 
     @Valid
     private ValueRequest value;
     private boolean valueExplicitlySet = false;
 
-    public String getOwnerServiceName() { return ownerServiceName; }
-    public void setOwnerServiceName(String ownerServiceName) { this.ownerServiceName = ownerServiceName; }
+    public String getMaintainer() { return maintainer; }
+    public void setMaintainer(String maintainer) { this.maintainer = maintainer; }
 
     public Boolean getEnabled() { return enabled; }
     public void setEnabled(Boolean enabled) { this.enabled = enabled; }

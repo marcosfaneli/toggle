@@ -13,17 +13,18 @@ class UpdateToggleCommandMapperTest {
 
     @Test
     void shouldMapToKeepWhenValueFieldAbsent() throws Exception {
-        var request = objectMapper.readValue("{\"ownerServiceName\":\"svc\",\"enabled\":true}", UpdateToggleRequest.class);
+        var request = objectMapper.readValue("{\"maintainer\":\"svc\",\"enabled\":true}", UpdateToggleRequest.class);
 
         UpdateToggleCommand command = mapper.toCommand("t", request);
 
         assertThat(command.valueUpdate()).isInstanceOf(UpdateToggleCommand.ValueUpdate.Keep.class);
+        assertThat(command.maintainer()).isEqualTo("svc");
         assertThat(command.enabled()).isTrue();
     }
 
     @Test
     void shouldMapToRemoveWhenValueExplicitlyNull() throws Exception {
-        var request = objectMapper.readValue("{\"ownerServiceName\":\"svc\",\"value\":null}", UpdateToggleRequest.class);
+        var request = objectMapper.readValue("{\"maintainer\":\"svc\",\"value\":null}", UpdateToggleRequest.class);
 
         UpdateToggleCommand command = mapper.toCommand("t", request);
 
@@ -33,7 +34,7 @@ class UpdateToggleCommandMapperTest {
     @Test
     void shouldMapToSetWhenValuePresent() throws Exception {
         var request = objectMapper.readValue(
-            "{\"ownerServiceName\":\"svc\",\"value\":{\"type\":\"NUMBER\",\"raw\":\"99\"}}", UpdateToggleRequest.class);
+            "{\"maintainer\":\"svc\",\"value\":{\"type\":\"NUMBER\",\"raw\":\"99\"}}", UpdateToggleRequest.class);
 
         UpdateToggleCommand command = mapper.toCommand("t", request);
 
@@ -44,22 +45,24 @@ class UpdateToggleCommandMapperTest {
     }
 
     @Test
-    void shouldMapNameAndOwnerServiceName() throws Exception {
-        var request = objectMapper.readValue("{\"ownerServiceName\":\"checkout-service\"}", UpdateToggleRequest.class);
+    void shouldMapNameAndMaintainer() throws Exception {
+        var request = objectMapper.readValue("{\"maintainer\":\"checkout-service\"}", UpdateToggleRequest.class);
 
         UpdateToggleCommand command = mapper.toCommand("my-toggle", request);
 
         assertThat(command.name()).isEqualTo("my-toggle");
+        assertThat(command.maintainer()).isEqualTo("checkout-service");
         assertThat(command.enabled()).isNull();
     }
 
     @Test
-    void shouldAllowNullOwnerServiceName() throws Exception {
+    void shouldAllowNullMaintainer() throws Exception {
         var request = objectMapper.readValue("{}", UpdateToggleRequest.class);
 
         UpdateToggleCommand command = mapper.toCommand("my-toggle", request);
 
         assertThat(command.name()).isEqualTo("my-toggle");
+        assertThat(command.maintainer()).isNull();
         assertThat(command.enabled()).isNull();
     }
 }

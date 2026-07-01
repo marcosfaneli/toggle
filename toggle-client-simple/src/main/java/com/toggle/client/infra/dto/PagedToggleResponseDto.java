@@ -13,7 +13,7 @@ public record PagedToggleResponseDto(
     public record ToggleResponseDto(
             String id,
             String name,
-            String ownerServiceName,
+            String maintainer,
             boolean enabled,
             long version,
             Instant updatedAt,

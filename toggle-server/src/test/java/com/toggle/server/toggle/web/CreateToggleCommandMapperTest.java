@@ -16,7 +16,7 @@ class CreateToggleCommandMapperTest {
         CreateToggleCommand command = mapper.toCommand(request);
 
         assertThat(command.name()).isEqualTo("my-toggle");
-        assertThat(command.ownerServiceName()).isEqualTo("svc");
+        assertThat(command.maintainer()).isEqualTo("svc");
         assertThat(command.enabled()).isTrue();
         assertThat(command.value()).isNull();
     }

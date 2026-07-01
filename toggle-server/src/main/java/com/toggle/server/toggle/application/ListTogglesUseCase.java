@@ -16,6 +16,6 @@ public class ListTogglesUseCase {
     }
 
     public Slice<Toggle> execute(ListTogglesQuery query, Pageable pageable) {
-        return persistenceAdapter.findAll(query.ownerServiceName(), query.enabled(), pageable);
+        return persistenceAdapter.findAll(query.maintainer(), query.enabled(), pageable);
     }
 }

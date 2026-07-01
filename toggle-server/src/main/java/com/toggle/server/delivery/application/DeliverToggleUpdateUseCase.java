@@ -96,7 +96,7 @@ public class DeliverToggleUpdateUseCase {
         }
         return new ToggleCallbackPayload(
                 toggle.name(),
-                toggle.ownerServiceName(),
+                toggle.maintainer(),
                 toggle.enabled(),
                 toggle.version(),
                 valuePayload);

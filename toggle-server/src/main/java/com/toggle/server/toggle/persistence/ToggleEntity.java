@@ -18,8 +18,8 @@ class ToggleEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "owner_service_name", nullable = false)
-    private String ownerServiceName;
+    @Column(name = "maintainer", nullable = false)
+    private String maintainer;
 
     @Column(name = "enabled", nullable = false)
     private boolean enabled;
@@ -42,8 +42,8 @@ class ToggleEntity {
     String getName() { return name; }
     void setName(String name) { this.name = name; }
 
-    String getOwnerServiceName() { return ownerServiceName; }
-    void setOwnerServiceName(String ownerServiceName) { this.ownerServiceName = ownerServiceName; }
+    String getMaintainer() { return maintainer; }
+    void setMaintainer(String maintainer) { this.maintainer = maintainer; }
 
     boolean isEnabled() { return enabled; }
     void setEnabled(boolean enabled) { this.enabled = enabled; }

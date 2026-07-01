@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 
 public record CreateToggleRequest(
         @NotBlank String name,
-        @NotBlank String ownerServiceName,
+        @NotBlank String maintainer,
         boolean enabled,
         @Valid ValueRequest value) {
 
