@@ -139,7 +139,7 @@ class ToggleControllerTest {
 
     @Test
     void shouldCreateToggleWithStringValueAndReturn201() throws Exception {
-        var valueRequest = new CreateToggleRequest.ValueRequest("STRING", "enabled");
+        var valueRequest = new ValueRequest("STRING", "enabled");
         var request = new CreateToggleRequest("new-checkout", "checkout-service", true, valueRequest);
         var toggleValue = new ToggleValue(ValueType.STRING, "enabled");
         var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVWX", "new-checkout", "checkout-service", true, 1L, Instant.now(), toggleValue);
@@ -158,7 +158,7 @@ class ToggleControllerTest {
 
     @Test
     void shouldCreateToggleWithNumberValueAndReturn201() throws Exception {
-        var valueRequest = new CreateToggleRequest.ValueRequest("NUMBER", "42");
+        var valueRequest = new ValueRequest("NUMBER", "42");
         var request = new CreateToggleRequest("limite-requisicoes", "api-gateway", true, valueRequest);
         var toggleValue = new ToggleValue(ValueType.NUMBER, "42");
         var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVXY", "limite-requisicoes", "api-gateway", true, 1L, Instant.now(), toggleValue);

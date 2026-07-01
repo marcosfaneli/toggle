@@ -5,6 +5,7 @@ import com.toggle.server.delivery.domain.ToggleUpdatedEvent;
 import com.toggle.server.delivery.infrastructure.ToggleCallbackClient;
 import com.toggle.server.delivery.infrastructure.ToggleCallbackPayload;
 import com.toggle.server.delivery.persistence.DeliveryPersistenceAdapter;
+import com.toggle.server.shared.web.ToggleValueDto;
 import com.toggle.server.toggle.domain.Toggle;
 import com.toggle.server.toggle.persistence.TogglePersistenceAdapter;
 import org.slf4j.Logger;
@@ -93,17 +94,11 @@ public class DeliverToggleUpdateUseCase {
     }
 
     private ToggleCallbackPayload toPayload(Toggle toggle) {
-        ToggleCallbackPayload.ValuePayload valuePayload = null;
-        if (toggle.value() != null) {
-            valuePayload = new ToggleCallbackPayload.ValuePayload(
-                    toggle.value().type().name(),
-                    toggle.value().raw());
-        }
         return new ToggleCallbackPayload(
                 toggle.name(),
                 toggle.maintainer(),
                 toggle.enabled(),
                 toggle.version(),
-                valuePayload);
+                ToggleValueDto.from(toggle.value()));
     }
 }
