@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, timeout } from 'rxjs';
 import { Toggle, ToggleApiService } from '../../core/toggle-api.service';
 
 type EnabledFilter = 'ALL' | 'ENABLED' | 'DISABLED';
@@ -16,6 +16,7 @@ export class TogglesPage implements OnInit {
   private readonly toggleApi = inject(ToggleApiService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   toggles: Toggle[] = [];
   selectedMaintainer = '';
@@ -25,6 +26,7 @@ export class TogglesPage implements OnInit {
   first = true;
   last = true;
   loading = false;
+  loaded = false;
   error = '';
   notice = '';
 
@@ -43,16 +45,22 @@ export class TogglesPage implements OnInit {
       page: this.page,
       size: this.pageSize
     }).pipe(
-      finalize(() => this.loading = false)
+      timeout(10000),
+      finalize(() => {
+        this.loading = false;
+        this.changeDetector.detectChanges();
+      })
     ).subscribe({
       next: response => {
         this.toggles = response.content;
         this.first = response.first;
         this.last = response.last;
         this.page = response.number;
+        this.loaded = true;
       },
       error: err => {
         this.error = this.errorMessage(err);
+        this.loaded = true;
       }
     });
   }

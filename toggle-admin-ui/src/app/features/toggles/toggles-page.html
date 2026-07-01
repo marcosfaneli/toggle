@@ -13,8 +13,7 @@
         <input
           name="maintainer"
           type="text"
-          [(ngModel)]="selectedMaintainer"
-          (ngModelChange)="applyFilters()">
+          [(ngModel)]="selectedMaintainer">
       </label>
 
       <label>
@@ -51,10 +50,10 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngIf="loading && toggles.length === 0">
+          <tr *ngIf="loading && !loaded">
             <td colspan="7" class="empty-cell">Loading</td>
           </tr>
-          <tr *ngIf="!loading && toggles.length === 0">
+          <tr *ngIf="!loading && loaded && toggles.length === 0">
             <td colspan="7" class="empty-cell">No toggles</td>
           </tr>
           <tr *ngFor="let toggle of toggles; trackBy: trackByName">
