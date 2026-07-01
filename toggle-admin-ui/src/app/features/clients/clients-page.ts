@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ClientApiService, ClientInstance, ClientStatus } from '../../core/client-api.service';
+import { finalize, timeout } from 'rxjs';
 
 type StatusFilter = 'ALL' | ClientStatus;
 
@@ -12,11 +13,13 @@ type StatusFilter = 'ALL' | ClientStatus;
 })
 export class ClientsPage implements OnInit {
   private readonly clientApi = inject(ClientApiService);
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   clients: ClientInstance[] = [];
   serviceName = '';
   selectedStatus: StatusFilter = 'ALL';
   loading = false;
+  loaded = false;
   error = '';
 
   ngOnInit(): void {
@@ -29,14 +32,20 @@ export class ClientsPage implements OnInit {
     this.clientApi.list({
       serviceName: this.serviceName.trim() || undefined,
       status: this.selectedStatus === 'ALL' ? undefined : this.selectedStatus
-    }).subscribe({
+    }).pipe(
+      timeout(10000),
+      finalize(() => {
+        this.loading = false;
+        this.changeDetector.detectChanges();
+      })
+    ).subscribe({
       next: clients => {
         this.clients = clients;
-        this.loading = false;
+        this.loaded = true;
       },
       error: err => {
         this.error = this.errorMessage(err);
-        this.loading = false;
+        this.loaded = true;
       }
     });
   }

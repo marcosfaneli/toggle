@@ -45,10 +45,10 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngIf="loading">
+        <tr *ngIf="loading && !loaded">
           <td colspan="7" class="empty-cell">Loading</td>
         </tr>
-        <tr *ngIf="!loading && clients.length === 0">
+        <tr *ngIf="!loading && loaded && clients.length === 0">
           <td colspan="7" class="empty-cell">No clients</td>
         </tr>
         <tr *ngFor="let client of clients; trackBy: trackByPublicId">
