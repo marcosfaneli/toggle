@@ -1,0 +1,17 @@
+<div class="app-shell">
+  <header class="topbar">
+    <a class="brand" routerLink="/toggles" aria-label="Switchboard admin">
+      <span class="brand-mark">S</span>
+      <span>Switchboard</span>
+    </a>
+
+    <nav>
+      <a routerLink="/toggles" routerLinkActive="active">Toggles</a>
+      <a routerLink="/clients" routerLinkActive="active">Clients</a>
+    </nav>
+  </header>
+
+  <main>
+    <router-outlet />
+  </main>
+</div>

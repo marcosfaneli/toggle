@@ -1,0 +1,76 @@
+<section class="work-surface full-width">
+  <div class="surface-header">
+    <div>
+      <h1>Clients</h1>
+      <p>{{ clients.length }} instances</p>
+    </div>
+  </div>
+
+  <form class="filter-bar" (ngSubmit)="loadClients()">
+    <label>
+      <span>Service</span>
+      <input name="serviceName" type="text" [(ngModel)]="serviceName">
+    </label>
+
+    <label>
+      <span>Status</span>
+      <select name="status" [(ngModel)]="selectedStatus">
+        <option value="ALL">All</option>
+        <option value="ACTIVE">Active</option>
+        <option value="INACTIVE">Inactive</option>
+      </select>
+    </label>
+
+    <div class="filter-actions">
+      <button class="secondary-action" type="button" (click)="resetFilters()">Reset</button>
+      <button class="primary-action" type="submit">Apply</button>
+    </div>
+  </form>
+
+  <div class="feedback-row" *ngIf="error">
+    <p class="error-text">{{ error }}</p>
+  </div>
+
+  <div class="table-frame">
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Instance</th>
+          <th>Pod</th>
+          <th>Namespace</th>
+          <th>Status</th>
+          <th>Registered</th>
+          <th>Subscriptions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="loading">
+          <td colspan="7" class="empty-cell">Loading</td>
+        </tr>
+        <tr *ngIf="!loading && clients.length === 0">
+          <td colspan="7" class="empty-cell">No clients</td>
+        </tr>
+        <tr *ngFor="let client of clients; trackBy: trackByPublicId">
+          <td>{{ client.serviceName }}</td>
+          <td class="mono-cell">{{ client.instanceId }}</td>
+          <td>{{ client.podName }}</td>
+          <td>{{ client.namespace }}</td>
+          <td>
+            <span class="status-pill" [class.enabled]="client.status === 'ACTIVE'">
+              {{ client.status === 'ACTIVE' ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td>{{ client.registeredAt | date:'short' }}</td>
+          <td>
+            <div class="subscription-list">
+              <span *ngFor="let subscription of client.subscriptions">
+                {{ subscription.toggleName }} / {{ subscription.consumeMode }}
+              </span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

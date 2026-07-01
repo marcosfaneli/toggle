@@ -5,6 +5,7 @@ resources:
   - namespace.yaml
   - server.yaml
   - client.yaml
+  - admin-ui.yaml
 labels:
   - pairs:
       app.kubernetes.io/part-of: switchboard

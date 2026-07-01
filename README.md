@@ -36,6 +36,25 @@ mvn spring-boot:run
 Server runs on `http://localhost:8080`.  
 Adminer (DB admin) on `http://localhost:8081`.
 
+**Start the admin UI:**
+
+```bash
+cd toggle-admin-ui
+npm install
+npm start
+```
+
+Admin UI runs on `http://localhost:4200` and proxies `/api` to the server.
+
+**Start the full local stack with Docker Compose:**
+
+```bash
+docker compose up --build
+```
+
+The admin UI is exposed on `http://localhost:4200`, the server on
+`http://localhost:8080`, and Adminer on `http://localhost:8081`.
+
 The server reads the database connection from environment variables, with local defaults:
 
 | Variable | Default |
@@ -58,7 +77,7 @@ Content-Type: application/json
 
 {
   "name": "my-feature",
-  "ownerServiceName": "order-service",
+  "maintainer": "order-service",
   "enabled": true,
   "value": {
     "type": "STRING",
@@ -75,7 +94,7 @@ Content-Type: application/json
 {
   "id": "01JPXYZ...",
   "name": "my-feature",
-  "ownerServiceName": "order-service",
+  "maintainer": "order-service",
   "enabled": true,
   "version": 1,
   "updatedAt": "2026-04-21T17:00:00",
@@ -95,7 +114,7 @@ PATCH /toggles/{name}
 Content-Type: application/json
 
 {
-  "ownerServiceName": "order-service",
+  "maintainer": "order-service",
   "enabled": false,
   "value": {
     "type": "NUMBER",
@@ -104,15 +123,23 @@ Content-Type: application/json
 }
 ```
 
-`ownerServiceName` belongs to the request body (not query params).
+`maintainer` belongs to the request body (not query params).
 
 - Omit `value` to keep the current value unchanged.
 - Send `"value": null` to remove the current value.
-- `ownerServiceName` can be omitted when the toggle name is unique across services.
+- Omit `maintainer` to keep the current maintainer unchanged.
 
 **200 OK**
 
 Returns the updated toggle.
+
+### List maintainers
+
+```http
+GET /maintainers
+```
+
+Returns the distinct maintainers currently associated with toggles.
 
 **Errors** follow [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) (`application/problem+json`):
 
@@ -169,6 +196,7 @@ cluster.
 - [MVP implementation stories](./doc/mvp-implementation-stories.md)
 - [Feature toggle flow](./doc/feature-toggle-flow.puml)
 - [Data model](./doc/feature-toggle-data-model.puml)
+- [Admin UI](./toggle-admin-ui/README.md)
 
 ## Importing the API collection
 

@@ -1,0 +1,85 @@
+<section class="work-surface full-width">
+    <div class="surface-header">
+      <div>
+        <h1>Toggles</h1>
+        <p>{{ toggles.length }} visible</p>
+      </div>
+      <a class="primary-action button-link" routerLink="/toggles/new">New toggle</a>
+    </div>
+
+    <form class="filter-bar" (ngSubmit)="applyFilters()">
+      <label>
+        <span>Maintainer</span>
+        <select name="maintainer" [(ngModel)]="selectedMaintainer" (ngModelChange)="applyFilters()">
+          <option [ngValue]="''">All</option>
+          <option *ngFor="let maintainer of maintainers" [value]="maintainer">{{ maintainer }}</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Status</span>
+        <select name="enabled" [(ngModel)]="selectedEnabled" (ngModelChange)="applyFilters()">
+          <option [ngValue]="'ALL'">All</option>
+          <option [ngValue]="'ENABLED'">Enabled</option>
+          <option [ngValue]="'DISABLED'">Disabled</option>
+        </select>
+      </label>
+
+      <div class="filter-actions">
+        <button class="secondary-action" type="button" (click)="resetFilters()">Reset</button>
+        <button class="primary-action" type="submit">Apply</button>
+      </div>
+    </form>
+
+    <div class="feedback-row" *ngIf="error || notice">
+      <p class="error-text" *ngIf="error">{{ error }}</p>
+      <p class="notice-text" *ngIf="notice">{{ notice }}</p>
+    </div>
+
+    <div class="table-frame">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Maintainer</th>
+            <th>Status</th>
+            <th>Value</th>
+            <th>Version</th>
+            <th>Updated</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading && toggles.length === 0">
+            <td colspan="7" class="empty-cell">Loading</td>
+          </tr>
+          <tr *ngIf="!loading && toggles.length === 0">
+            <td colspan="7" class="empty-cell">No toggles</td>
+          </tr>
+          <tr *ngFor="let toggle of toggles; trackBy: trackByName">
+            <td>
+              <button class="link-button" type="button" (click)="edit(toggle)">{{ toggle.name }}</button>
+            </td>
+            <td>{{ toggle.maintainer }}</td>
+            <td>
+              <span class="status-pill" [class.enabled]="toggle.enabled">
+                {{ toggle.enabled ? 'Enabled' : 'Disabled' }}
+              </span>
+            </td>
+            <td class="value-cell">{{ valueLabel(toggle) }}</td>
+            <td>{{ toggle.version }}</td>
+            <td>{{ toggle.updatedAt | date:'short' }}</td>
+            <td class="row-actions">
+              <button class="secondary-action compact" type="button" (click)="edit(toggle)">Edit</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <button class="secondary-action" type="button" [disabled]="first" (click)="previousPage()">Previous</button>
+      <span>Page {{ page + 1 }}</span>
+      <button class="secondary-action" type="button" [disabled]="last" (click)="nextPage()">Next</button>
+    </div>
+</section>

@@ -1,0 +1,93 @@
+.app-shell {
+  min-height: 100vh;
+  background: #f5f7f6;
+  color: #1c2420;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
+  padding: 0 28px;
+  border-bottom: 1px solid #d9dfdc;
+  background: #ffffff;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #17211c;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: #29483b;
+  color: #ffffff;
+  font-size: 0.92rem;
+}
+
+nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid #d9dfdc;
+  border-radius: 8px;
+  background: #f8faf9;
+}
+
+nav a {
+  min-width: 92px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  color: #4b5752;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+
+nav a.active {
+  background: #ffffff;
+  color: #17211c;
+  box-shadow: 0 1px 4px rgb(28 36 32 / 12%);
+}
+
+main {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  padding: 24px;
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  nav {
+    width: 100%;
+  }
+
+  nav a {
+    flex: 1;
+    min-width: 0;
+  }
+
+  main {
+    padding: 16px;
+  }
+}

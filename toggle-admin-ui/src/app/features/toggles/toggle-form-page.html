@@ -1,0 +1,73 @@
+<section class="form-page">
+  <div class="work-surface form-surface">
+    <div class="surface-header">
+      <div>
+        <h1>{{ mode === 'create' ? 'New toggle' : 'Edit toggle' }}</h1>
+        <p>{{ mode === 'create' ? 'Create a global feature toggle' : form.name }}</p>
+      </div>
+    </div>
+
+    <div class="feedback-row" *ngIf="error">
+      <p class="error-text">{{ error }}</p>
+    </div>
+
+    <div class="empty-cell" *ngIf="loading">Loading</div>
+
+    <form class="editor-form full-form" *ngIf="!loading" (ngSubmit)="save()">
+      <label>
+        <span>Name</span>
+        <input
+          name="name"
+          type="text"
+          [(ngModel)]="form.name"
+          [readonly]="mode === 'edit'"
+          required>
+      </label>
+
+      <label>
+        <span>Maintainer</span>
+        <input
+          name="maintainer"
+          type="text"
+          list="maintainers-list"
+          [(ngModel)]="form.maintainer"
+          required>
+        <datalist id="maintainers-list">
+          <option *ngFor="let maintainer of maintainers" [value]="maintainer"></option>
+        </datalist>
+      </label>
+
+      <label class="toggle-row">
+        <input name="enabled" type="checkbox" [(ngModel)]="form.enabled">
+        <span>Enabled</span>
+      </label>
+
+      <label class="toggle-row">
+        <input name="hasValue" type="checkbox" [(ngModel)]="form.hasValue">
+        <span>Value</span>
+      </label>
+
+      <div class="value-editor" *ngIf="form.hasValue">
+        <label>
+          <span>Type</span>
+          <select name="valueType" [(ngModel)]="form.valueType">
+            <option value="STRING">STRING</option>
+            <option value="NUMBER">NUMBER</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Raw</span>
+          <input name="valueRaw" type="text" [(ngModel)]="form.valueRaw">
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button class="secondary-action" type="button" (click)="cancel()">Cancel</button>
+        <button class="primary-action" type="submit" [disabled]="saving">
+          {{ saving ? 'Saving' : 'Save' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</section>

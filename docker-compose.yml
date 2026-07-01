@@ -26,5 +26,31 @@ services:
       mysql:
         condition: service_healthy
 
+  toggle-server:
+    build:
+      context: ./toggle-server
+    container_name: toggle-server
+    environment:
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_NAME: toggle_db
+      DB_USERNAME: toggle
+      DB_PASSWORD: toggle
+      TOGGLE_SECURITY_ALLOW_LOCAL_CALLBACKS: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  toggle-admin-ui:
+    build:
+      context: ./toggle-admin-ui
+    container_name: toggle-admin-ui
+    ports:
+      - "4200:80"
+    depends_on:
+      - toggle-server
+
 volumes:
   toggle_mysql_data:

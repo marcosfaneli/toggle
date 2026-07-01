@@ -22,7 +22,7 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"name\": \"minha-feature\",\n  \"ownerServiceName\": \"pedido-service\",\n  \"enabled\": true,\n  \"value\": {\n    \"type\": \"STRING\",\n    \"raw\": \"variant-a\"\n  }\n}"
+        "text": "{\n  \"name\": \"minha-feature\",\n  \"maintainer\": \"pedido-service\",\n  \"enabled\": true,\n  \"value\": {\n    \"type\": \"STRING\",\n    \"raw\": \"variant-a\"\n  }\n}"
       }
     },
     {
@@ -31,7 +31,7 @@
       "parentId": "wrk_toggle_server",
       "name": "GET /toggles",
       "method": "GET",
-      "url": "http://localhost:8080/toggles?ownerServiceName=pedido-service&page=0&size=20",
+      "url": "http://localhost:8080/toggles?maintainer=pedido-service&page=0&size=20",
       "headers": [
         { "name": "Accept", "value": "application/json" }
       ]
@@ -42,7 +42,7 @@
       "parentId": "wrk_toggle_server",
       "name": "PATCH /toggles/{name}",
       "method": "PATCH",
-      "url": "http://localhost:8080/toggles/minha-feature?ownerServiceName=pedido-service",
+      "url": "http://localhost:8080/toggles/minha-feature?maintainer=pedido-service",
       "headers": [
         { "name": "Content-Type", "value": "application/json" }
       ],

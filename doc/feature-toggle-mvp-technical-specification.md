@@ -107,7 +107,9 @@ Based on [feature-toggle-data-model.puml](feature-toggle-data-model.puml).
 Main entities:
 
 - FeatureToggle
-  - BIGINT (PK), publicId (UUIDv7/ULID), name, ownerServiceName, enabled, version, updatedAt.
+  - BIGINT (PK), publicId (UUIDv7/ULID), name, maintainer, enabled, version, updatedAt.
+  - `name` is globally unique.
+  - `maintainer` identifies the team or person responsible for the toggle.
 
 - FeatureToggleValue (0..1 per toggle)
   - Optional child object for typed value.
@@ -154,7 +156,7 @@ Business error example (409):
   "type": "about:blank",
   "title": "Conflict",
   "status": 409,
-  "detail": "Toggle 'new-checkout' already exists for service 'checkout-service'",
+  "detail": "Toggle 'new-checkout' already exists",
   "instance": "/toggles"
 }
 ```
@@ -169,7 +171,7 @@ Request:
 ```json
 {
   "name": "new-checkout",
-  "ownerServiceName": "checkout-service",
+  "maintainer": "checkout-service",
   "enabled": true,
   "value": {
     "type": "STRING",
@@ -189,7 +191,7 @@ Response 201:
 {
   "id": "01J...",
   "name": "new-checkout",
-  "ownerServiceName": "checkout-service",
+  "maintainer": "checkout-service",
   "enabled": true,
   "value": {
     "type": "STRING",
@@ -222,10 +224,10 @@ Rules:
 - Increment `version` on every change.
 - Trigger distribution to registered consumer instances.
 
-#### 5.3.3 Query Toggles For A Service
+#### 5.3.3 Query Toggles
 
 - Method: GET
-- Route: /toggles?serviceName={service}
+- Route: /toggles?maintainer={maintainer}
 
 Response 200:
 
@@ -245,6 +247,14 @@ Response 200:
   ]
 }
 ```
+
+#### 5.3.4 Query Maintainers
+
+- Method: GET
+- Route: /maintainers
+
+Returns the distinct maintainers currently associated with toggles, sorted
+alphabetically.
 
 #### 5.3.4 Register Client Instance
 
@@ -364,7 +374,8 @@ Tracing:
   - No flush occurs before queries, reducing database round trips.
   - Some datasources/drivers automatically route read-only transactions to read replicas.
 - Recommended indexes:
-  - FeatureToggle(name, ownerServiceName) UNIQUE
+  - FeatureToggle(name) UNIQUE
+  - FeatureToggle(maintainer)
   - ClientInstance(serviceName, instanceId) UNIQUE
   - ToggleSyncState(toggleId, clientInstanceId) UNIQUE
   - ToggleSyncState(syncStatus)

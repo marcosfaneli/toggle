@@ -27,7 +27,7 @@ class FeatureToggle {
   +id: BIGINT <<PK>>
   +publicId: UUIDv7/ULID <<UNIQUE>>
   +name: String
-  +ownerServiceName: String
+  +maintainer: String
   +enabled: Boolean
   +version: Long
   +updatedAt: Instant

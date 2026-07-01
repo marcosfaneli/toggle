@@ -4,6 +4,7 @@ This directory runs Switchboard in a local Minikube cluster with:
 
 - `toggle-server`
 - `toggle-client-simple` with 2 replicas
+- `toggle-admin-ui`
 
 The server uses the MySQL instance already exposed by the project
 `docker compose` setup on `localhost:3306`. Inside Minikube, the host is
@@ -30,6 +31,7 @@ From the repository root:
 ```bash
 minikube image build -t toggle-server:minikube ./toggle-server
 minikube image build -t toggle-client-simple:minikube ./toggle-client-simple
+minikube image build -t toggle-admin-ui:minikube ./toggle-admin-ui
 ```
 
 Alternative, if your Minikube version does not support `image build`:
@@ -38,6 +40,7 @@ Alternative, if your Minikube version does not support `image build`:
 eval "$(minikube docker-env)"
 docker build -t toggle-server:minikube ./toggle-server
 docker build -t toggle-client-simple:minikube ./toggle-client-simple
+docker build -t toggle-admin-ui:minikube ./toggle-admin-ui
 ```
 
 ## Local Database
@@ -80,11 +83,11 @@ In another terminal, create the toggles consumed by the client:
 ```bash
 curl -i -X POST http://localhost:18080/toggles \
   -H 'Content-Type: application/json' \
-  -d '{"name":"new-checkout","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"STRING","raw":"variant-a"}}'
+  -d '{"name":"new-checkout","maintainer":"checkout-service","enabled":true,"value":{"type":"STRING","raw":"variant-a"}}'
 
 curl -i -X POST http://localhost:18080/toggles \
   -H 'Content-Type: application/json' \
-  -d '{"name":"payment-v2","ownerServiceName":"checkout-service","enabled":true,"value":{"type":"NUMBER","raw":"10"}}'
+  -d '{"name":"payment-v2","maintainer":"checkout-service","enabled":true,"value":{"type":"NUMBER","raw":"10"}}'
 ```
 
 Then start the client:
@@ -93,6 +96,16 @@ Then start the client:
 kubectl apply -n toggle -f k8s/minikube/client.yaml
 kubectl -n toggle rollout status deployment/toggle-client-simple
 ```
+
+Start the admin UI:
+
+```bash
+kubectl apply -n toggle -f k8s/minikube/admin-ui.yaml
+kubectl -n toggle rollout status deployment/toggle-admin-ui
+kubectl -n toggle port-forward svc/toggle-admin-ui 14200:80
+```
+
+Open `http://localhost:14200`.
 
 ## Verification
 
