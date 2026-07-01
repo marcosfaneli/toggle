@@ -248,14 +248,6 @@ Response 200:
 }
 ```
 
-#### 5.3.4 Query Maintainers
-
-- Method: GET
-- Route: /maintainers
-
-Returns the distinct maintainers currently associated with toggles, sorted
-alphabetically.
-
 #### 5.3.4 Register Client Instance
 
 - Method: POST

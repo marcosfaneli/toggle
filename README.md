@@ -133,14 +133,6 @@ Content-Type: application/json
 
 Returns the updated toggle.
 
-### List maintainers
-
-```http
-GET /maintainers
-```
-
-Returns the distinct maintainers currently associated with toggles.
-
 **Errors** follow [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) (`application/problem+json`):
 
 | Status | Cause |

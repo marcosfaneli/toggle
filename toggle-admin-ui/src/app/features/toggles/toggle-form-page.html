@@ -29,12 +29,8 @@
         <input
           name="maintainer"
           type="text"
-          list="maintainers-list"
           [(ngModel)]="form.maintainer"
           required>
-        <datalist id="maintainers-list">
-          <option *ngFor="let maintainer of maintainers" [value]="maintainer"></option>
-        </datalist>
       </label>
 
       <label class="toggle-row">

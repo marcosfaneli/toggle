@@ -68,10 +68,6 @@ export class ToggleApiService {
     return this.http.get<PagedToggleResponse>(`${this.apiBaseUrl}/toggles`, { params });
   }
 
-  listMaintainers(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.apiBaseUrl}/maintainers`);
-  }
-
   getByName(name: string): Observable<Toggle> {
     return this.http.get<Toggle>(`${this.apiBaseUrl}/toggles/${encodeURIComponent(name)}`);
   }

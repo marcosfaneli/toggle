@@ -10,10 +10,11 @@
     <form class="filter-bar" (ngSubmit)="applyFilters()">
       <label>
         <span>Maintainer</span>
-        <select name="maintainer" [(ngModel)]="selectedMaintainer" (ngModelChange)="applyFilters()">
-          <option [ngValue]="''">All</option>
-          <option *ngFor="let maintainer of maintainers" [value]="maintainer">{{ maintainer }}</option>
-        </select>
+        <input
+          name="maintainer"
+          type="text"
+          [(ngModel)]="selectedMaintainer"
+          (ngModelChange)="applyFilters()">
       </label>
 
       <label>

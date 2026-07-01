@@ -31,7 +31,6 @@ export class ToggleFormPage implements OnInit {
   private readonly toggleApi = inject(ToggleApiService);
   private readonly changeDetector = inject(ChangeDetectorRef);
 
-  maintainers: string[] = [];
   mode: 'create' | 'edit' = 'create';
   loading = false;
   saving = false;
@@ -39,8 +38,6 @@ export class ToggleFormPage implements OnInit {
   form: ToggleForm = this.emptyForm();
 
   ngOnInit(): void {
-    this.loadMaintainers();
-
     const name = this.route.snapshot.paramMap.get('name');
     if (name) {
       this.mode = 'edit';
@@ -98,13 +95,6 @@ export class ToggleFormPage implements OnInit {
       error: err => {
         this.error = this.errorMessage(err);
       }
-    });
-  }
-
-  private loadMaintainers(): void {
-    this.toggleApi.listMaintainers().subscribe({
-      next: maintainers => this.maintainers = maintainers,
-      error: () => this.maintainers = []
     });
   }
 

@@ -18,7 +18,6 @@ export class TogglesPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
 
   toggles: Toggle[] = [];
-  maintainers: string[] = [];
   selectedMaintainer = '';
   selectedEnabled: EnabledFilter = 'ALL';
   page = 0;
@@ -30,7 +29,6 @@ export class TogglesPage implements OnInit {
   notice = '';
 
   ngOnInit(): void {
-    this.loadMaintainers();
     this.route.queryParamMap.subscribe(() => this.loadToggles(0));
   }
 
@@ -91,13 +89,6 @@ export class TogglesPage implements OnInit {
 
   trackByName(_: number, toggle: Toggle): string {
     return toggle.name;
-  }
-
-  private loadMaintainers(): void {
-    this.toggleApi.listMaintainers().subscribe({
-      next: maintainers => this.maintainers = maintainers,
-      error: () => this.maintainers = []
-    });
   }
 
   private enabledFilterValue(): boolean | undefined {

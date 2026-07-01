@@ -40,11 +40,6 @@ public class TogglePersistenceAdapter {
     }
 
     @Transactional(readOnly = true)
-    public List<String> findMaintainers() {
-        return repository.findDistinctMaintainers();
-    }
-
-    @Transactional(readOnly = true)
     public Slice<Toggle> findAll(String maintainer, Boolean enabled, Pageable pageable) {
         var hasMaintainerFilter = maintainer != null && !maintainer.isBlank();
 
