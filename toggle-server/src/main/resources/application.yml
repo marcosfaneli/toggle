@@ -2,7 +2,7 @@ spring:
   application:
     name: toggle-server
   datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:toggle_db}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:toggle_db}?useSSL=${DB_USE_SSL:true}&serverTimezone=UTC&allowPublicKeyRetrieval=${DB_ALLOW_PUBLIC_KEY_RETRIEVAL:false}
     username: ${DB_USERNAME:toggle}
     password: ${DB_PASSWORD:toggle}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -25,6 +25,12 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
 
 server:
   port: 8080

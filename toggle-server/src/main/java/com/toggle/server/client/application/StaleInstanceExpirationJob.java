@@ -31,10 +31,14 @@ public class StaleInstanceExpirationJob {
 
     @Scheduled(fixedDelayString = "${toggle.heartbeat.expiration-check-interval-ms:60000}")
     public void expireStaleInstances() {
-        var threshold = Instant.now(clock).minus(expirationTimeoutMinutes, ChronoUnit.MINUTES);
-        int expired = clientPersistenceAdapter.expireStaleInstances(threshold);
-        if (expired > 0) {
-            log.info("Expired {} stale client instance(s) with last heartbeat before {}", expired, threshold);
+        try {
+            var threshold = Instant.now(clock).minus(expirationTimeoutMinutes, ChronoUnit.MINUTES);
+            int expired = clientPersistenceAdapter.expireStaleInstances(threshold);
+            if (expired > 0) {
+                log.info("Expired {} stale client instance(s) with last heartbeat before {}", expired, threshold);
+            }
+        } catch (Exception ex) {
+            log.error("event=stale_instance_expiration_failed error={}", ex.getMessage(), ex);
         }
     }
 }

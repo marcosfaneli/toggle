@@ -536,4 +536,16 @@ class ToggleControllerTest {
                 .andExpect(jsonPath("$.detail").exists())
                 .andExpect(jsonPath("$.instance").exists());
     }
+
+    @Test
+    void shouldReturn500WithProblemDetailWhenUnexpectedExceptionOccurs() throws Exception {
+        when(getToggleByNameUseCase.execute("boom"))
+                .thenThrow(new RuntimeException("unexpected DB failure"));
+
+        mockMvc.perform(get("/toggles/boom"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentTypeCompatibleWith(Objects.requireNonNull(MediaType.APPLICATION_PROBLEM_JSON)))
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.detail").value("An unexpected error occurred"));
+    }
 }

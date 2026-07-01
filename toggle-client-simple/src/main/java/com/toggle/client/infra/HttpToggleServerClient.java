@@ -63,6 +63,10 @@ public class HttpToggleServerClient implements ToggleServerClient {
             registered = false;
             log.warn("Client registration rejected with 400: {}", ex.getResponseBodyAsString());
             return List.of();
+        } catch (RestClientException ex) {
+            registered = false;
+            log.warn("Client registration failed: {}", ex.getMessage());
+            return List.of();
         }
 
         if (response == null || response.toggles() == null) {
