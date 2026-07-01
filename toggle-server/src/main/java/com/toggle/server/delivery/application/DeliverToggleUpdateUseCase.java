@@ -56,8 +56,9 @@ public class DeliverToggleUpdateUseCase {
             ToggleCallbackPayload payload = toPayload(toggle);
 
             for (var subscriber : subscribers) {
+                Long syncStateId = null;
                 try {
-                    Long syncStateId = deliveryAdapter.upsertPendingResponse(
+                    syncStateId = deliveryAdapter.upsertPendingResponse(
                             toggleId, subscriber.clientInstanceId(), event.targetVersion());
 
                     boolean delivered = callbackClient.deliver(
@@ -76,6 +77,10 @@ public class DeliverToggleUpdateUseCase {
                                 subscriber.callbackUrl());
                     }
                 } catch (Exception ex) {
+                    if (syncStateId != null) {
+                        deliveryAdapter.markOutOfSync(syncStateId,
+                                "Exception during delivery: " + ex.getMessage());
+                    }
                     log.error("event=toggle_delivery_subscriber_error toggleName={} version={} clientInstanceId={} error={}",
                             event.toggleName(), event.targetVersion(), subscriber.clientInstanceId(),
                             ex.getMessage(), ex);

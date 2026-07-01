@@ -156,4 +156,20 @@ class DeliverToggleUpdateUseCaseTest {
 
         assertThat(payloadCaptor.getValue().value()).isNull();
     }
+
+    @Test
+    void deliver_whenCallbackThrowsException_marksOutOfSync() {
+        var subscriber = new ClientPersistenceAdapter.SubscriberView(42L, "http://client-svc:8080/toggles");
+        when(toggleAdapter.findToggleInternalId("my-feature"))
+                .thenReturn(Optional.of(new TogglePersistenceAdapter.ToggleInternalId(10L, TOGGLE)));
+        when(clientAdapter.findActiveSubscribersForToggle("my-feature")).thenReturn(List.of(subscriber));
+        when(deliveryAdapter.upsertPendingResponse(10L, 42L, 3L)).thenReturn(99L);
+        when(callbackClient.deliver(anyString(), anyString(), any()))
+                .thenThrow(new RuntimeException("connection reset"));
+
+        useCase.execute(EVENT);
+
+        verify(deliveryAdapter).markOutOfSync(eq(99L), eq("Exception during delivery: connection reset"));
+        verify(deliveryAdapter, never()).markSynced(anyLong(), anyLong());
+    }
 }

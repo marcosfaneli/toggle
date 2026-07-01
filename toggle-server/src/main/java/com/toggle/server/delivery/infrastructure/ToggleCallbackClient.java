@@ -20,7 +20,13 @@ public class ToggleCallbackClient {
     }
 
     public boolean deliver(String callbackUrl, String toggleName, ToggleCallbackPayload payload) {
-        URI uri = URI.create(callbackUrl + "/" + toggleName);
+        URI uri;
+        try {
+            uri = URI.create(callbackUrl + "/" + toggleName);
+        } catch (IllegalArgumentException ex) {
+            log.warn("Invalid callback URI callbackUrl={} toggleName={}: {}", callbackUrl, toggleName, ex.getMessage());
+            return false;
+        }
         try {
             restClient.put()
                     .uri(uri)
