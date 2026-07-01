@@ -2,6 +2,7 @@ package com.toggle.server.toggle.web;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 
 public class UpdateToggleRequest {
 
