@@ -28,6 +28,24 @@ export interface PagedToggleResponse {
   last: boolean;
 }
 
+export interface ToggleConsumer {
+  serviceName: string;
+  instanceId: string;
+  podName: string;
+  namespace: string;
+  callbackUrl: string;
+  status: string;
+  consumeMode: string;
+}
+
+export interface PagedToggleConsumerResponse {
+  content: ToggleConsumer[];
+  number: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+}
+
 export interface ToggleWriteRequest {
   maintainer?: string;
   enabled?: boolean;
@@ -78,5 +96,13 @@ export class ToggleApiService {
 
   update(name: string, request: ToggleWriteRequest): Observable<Toggle> {
     return this.http.patch<Toggle>(`${this.apiBaseUrl}/toggles/${encodeURIComponent(name)}`, request);
+  }
+
+  getConsumers(name: string, page = 0, size = 20): Observable<PagedToggleConsumerResponse> {
+    const params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    return this.http.get<PagedToggleConsumerResponse>(`${this.apiBaseUrl}/toggles/${encodeURIComponent(name)}/clients`, { params });
   }
 }

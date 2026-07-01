@@ -5,7 +5,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, timeout } from 'rxjs';
 import {
   CreateToggleRequest,
+  PagedToggleConsumerResponse,
   Toggle,
+  ToggleConsumer,
   ToggleApiService,
   ToggleValueType,
   ToggleWriteRequest
@@ -33,9 +35,18 @@ export class ToggleFormPage implements OnInit {
 
   mode: 'create' | 'edit' = 'create';
   loading = false;
+  consumersLoading = false;
   saving = false;
   error = '';
+  consumersError = '';
   form: ToggleForm = this.emptyForm();
+  consumers: ToggleConsumer[] = [];
+  consumersPage = 0;
+  readonly consumersPageSize = 20;
+  consumersFirst = true;
+  consumersLast = true;
+  loaded = false;
+  private toggleName = '';
 
   ngOnInit(): void {
     const name = this.route.snapshot.paramMap.get('name');
@@ -81,6 +92,8 @@ export class ToggleFormPage implements OnInit {
   private loadToggle(name: string): void {
     this.loading = true;
     this.error = '';
+    this.loaded = false;
+    this.toggleName = name;
 
     this.toggleApi.getByName(name).pipe(
       timeout(10000),
@@ -91,11 +104,34 @@ export class ToggleFormPage implements OnInit {
     ).subscribe({
       next: toggle => {
         this.form = this.formFromToggle(toggle);
+        this.loaded = true;
+        this.loadConsumersPage(name, 0);
       },
       error: err => {
         this.error = this.errorMessage(err);
+        this.loaded = true;
       }
     });
+  }
+
+  loadConsumers(page = this.consumersPage): void {
+    if (!this.toggleName) {
+      return;
+    }
+
+    this.loadConsumersPage(this.toggleName, page);
+  }
+
+  previousConsumersPage(): void {
+    if (!this.consumersFirst) {
+      this.loadConsumersPage(this.toggleName, this.consumersPage - 1);
+    }
+  }
+
+  nextConsumersPage(): void {
+    if (!this.consumersLast) {
+      this.loadConsumersPage(this.toggleName, this.consumersPage + 1);
+    }
   }
 
   private createRequest(): CreateToggleRequest {
@@ -141,6 +177,39 @@ export class ToggleFormPage implements OnInit {
       valueType: (toggle.value?.type ?? 'STRING') as ToggleValueType,
       valueRaw: toggle.value?.raw ?? ''
     };
+  }
+
+  trackByConsumer(_: number, consumer: ToggleConsumer): string {
+    return `${consumer.serviceName}:${consumer.instanceId}:${consumer.consumeMode}`;
+  }
+
+  private loadConsumersPage(name: string, page: number): void {
+    this.consumersLoading = true;
+    this.consumersError = '';
+    this.consumersPage = page;
+
+    this.toggleApi.getConsumers(name, page, this.consumersPageSize).pipe(
+      timeout(10000),
+      finalize(() => {
+        this.consumersLoading = false;
+        this.changeDetector.detectChanges();
+      })
+    ).subscribe({
+      next: response => this.applyConsumersResponse(response),
+      error: err => {
+        this.consumersError = this.errorMessage(err);
+        this.consumers = [];
+        this.consumersFirst = true;
+        this.consumersLast = true;
+      }
+    });
+  }
+
+  private applyConsumersResponse(response: PagedToggleConsumerResponse): void {
+    this.consumers = response.content;
+    this.consumersPage = response.number;
+    this.consumersFirst = response.first;
+    this.consumersLast = response.last;
   }
 
   private errorMessage(err: unknown): string {

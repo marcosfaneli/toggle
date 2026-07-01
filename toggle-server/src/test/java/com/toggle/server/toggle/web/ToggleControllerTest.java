@@ -5,6 +5,7 @@ import com.toggle.server.toggle.application.CreateToggleCommand;
 import com.toggle.server.toggle.application.CreateToggleUseCase;
 import com.toggle.server.toggle.application.GetToggleByNameUseCase;
 import com.toggle.server.toggle.application.ListTogglesQuery;
+import com.toggle.server.toggle.application.ListToggleConsumersUseCase;
 import com.toggle.server.toggle.application.ListTogglesUseCase;
 import com.toggle.server.toggle.application.UpdateToggleCommand;
 import com.toggle.server.toggle.application.UpdateToggleUseCase;
@@ -65,24 +66,56 @@ class ToggleControllerTest {
     @MockitoBean
     private UpdateToggleUseCase updateToggleUseCase;
 
-        @MockitoBean
-        private GetToggleByNameUseCase getToggleByNameUseCase;
-        @Test
-        void shouldReturnToggleByNameAndReturn200() throws Exception {
-                var toggleValue = new ToggleValue(ValueType.STRING, "enabled");
-                var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVWX", "new-checkout", "checkout-service", true, 1L, Instant.parse("2026-05-10T12:00:00Z"), toggleValue);
+    @MockitoBean
+    private GetToggleByNameUseCase getToggleByNameUseCase;
 
-                when(getToggleByNameUseCase.execute("new-checkout")).thenReturn(toggle);
+    @MockitoBean
+    private ListToggleConsumersUseCase listToggleConsumersUseCase;
 
-                mockMvc.perform(get("/toggles/new-checkout"))
-                                .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.name").value("new-checkout"))
-                                .andExpect(jsonPath("$.maintainer").value("checkout-service"))
-                                .andExpect(jsonPath("$.enabled").value(true))
-                                .andExpect(jsonPath("$.version").value(1))
-                                .andExpect(jsonPath("$.value.type").value("STRING"))
-                                .andExpect(jsonPath("$.value.raw").value("enabled"));
-        }
+    @Test
+    void shouldReturnToggleByNameAndReturn200() throws Exception {
+        var toggleValue = new ToggleValue(ValueType.STRING, "enabled");
+        var toggle = new Toggle("01ABCDEFGHIJKLMNOPQRSTUVWX", "new-checkout", "checkout-service", true, 1L, Instant.parse("2026-05-10T12:00:00Z"), toggleValue);
+
+        when(getToggleByNameUseCase.execute("new-checkout")).thenReturn(toggle);
+
+        mockMvc.perform(get("/toggles/new-checkout"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("new-checkout"))
+                .andExpect(jsonPath("$.maintainer").value("checkout-service"))
+                .andExpect(jsonPath("$.enabled").value(true))
+                .andExpect(jsonPath("$.version").value(1))
+                .andExpect(jsonPath("$.value.type").value("STRING"))
+                .andExpect(jsonPath("$.value.raw").value("enabled"));
+    }
+
+    @Test
+    void shouldReturnPagedClientsForToggle() throws Exception {
+        var pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.ASC, "serviceName"));
+        var consumers = List.of(
+                new com.toggle.server.client.application.ToggleConsumerView(
+                        "billing-service",
+                        "instance-a",
+                        "pod-a",
+                        "prod",
+                        "http://billing:8080/callback",
+                        "ACTIVE",
+                        "LOCAL_CACHE"));
+        var slice = new SliceImpl<>(consumers, pageable, false);
+
+        when(listToggleConsumersUseCase.execute("new-checkout", pageable)).thenReturn(slice);
+
+        mockMvc.perform(get("/toggles/new-checkout/clients"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].serviceName").value("billing-service"))
+                .andExpect(jsonPath("$.content[0].instanceId").value("instance-a"))
+                .andExpect(jsonPath("$.content[0].status").value("ACTIVE"))
+                .andExpect(jsonPath("$.content[0].consumeMode").value("LOCAL_CACHE"))
+                .andExpect(jsonPath("$.number").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.first").value(true))
+                .andExpect(jsonPath("$.last").value(true));
+    }
 
     @Test
     void shouldCreateToggleAndReturn201() throws Exception {

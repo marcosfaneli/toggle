@@ -3,6 +3,7 @@ package com.toggle.server.toggle.web;
 import com.toggle.server.toggle.application.CreateToggleUseCase;
 import com.toggle.server.toggle.application.GetToggleByNameUseCase;
 import com.toggle.server.toggle.application.ListTogglesQuery;
+import com.toggle.server.toggle.application.ListToggleConsumersUseCase;
 import com.toggle.server.toggle.application.ListTogglesUseCase;
 import com.toggle.server.toggle.application.UpdateToggleUseCase;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,6 +32,7 @@ public class ToggleController {
 
     private final CreateToggleUseCase createToggleUseCase;
     private final GetToggleByNameUseCase getToggleByNameUseCase;
+    private final ListToggleConsumersUseCase listToggleConsumersUseCase;
     private final ListTogglesUseCase listTogglesUseCase;
     private final UpdateToggleUseCase updateToggleUseCase;
     private final CreateToggleCommandMapper createMapper;
@@ -42,6 +44,7 @@ public class ToggleController {
 
     public ToggleController(CreateToggleUseCase createToggleUseCase,
                             GetToggleByNameUseCase getToggleByNameUseCase,
+                            ListToggleConsumersUseCase listToggleConsumersUseCase,
                             ListTogglesUseCase listTogglesUseCase,
                             UpdateToggleUseCase updateToggleUseCase,
                             CreateToggleCommandMapper createMapper,
@@ -49,6 +52,7 @@ public class ToggleController {
                             TogglePaginationLinkBuilder linkBuilder) {
         this.createToggleUseCase = createToggleUseCase;
         this.getToggleByNameUseCase = getToggleByNameUseCase;
+        this.listToggleConsumersUseCase = listToggleConsumersUseCase;
         this.listTogglesUseCase = listTogglesUseCase;
         this.updateToggleUseCase = updateToggleUseCase;
         this.createMapper = createMapper;
@@ -65,6 +69,14 @@ public class ToggleController {
     @GetMapping("/{name}")
     public ToggleResponse getByName(@PathVariable String name) {
         return ToggleResponse.from(getToggleByNameUseCase.execute(name));
+    }
+
+    @GetMapping("/{name}/clients")
+    public PagedToggleConsumerResponse listClientsByToggle(
+            @PathVariable String name,
+            @ParameterObject
+            @PageableDefault(size = 20, sort = "serviceName", direction = Sort.Direction.ASC) Pageable pageable) {
+        return PagedToggleConsumerResponse.from(listToggleConsumersUseCase.execute(name, pageable));
     }
 
     @GetMapping

@@ -7,6 +7,9 @@ import com.toggle.server.client.domain.ClientInstanceInactiveException;
 import com.toggle.server.client.domain.ClientInstanceNotFoundException;
 import com.toggle.server.client.domain.ClientInstanceStatus;
 import com.toggle.server.client.domain.ClientSubscription;
+import com.toggle.server.client.application.ToggleConsumerView;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -226,6 +229,19 @@ public class ClientPersistenceAdapter {
                 .filter(inst -> inst != null && ClientInstanceStatus.ACTIVE.name().equals(inst.getStatus()))
                 .map(inst -> new SubscriberView(inst.getId(), inst.getCallbackUrl()))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Slice<ToggleConsumerView> findConsumersForToggle(String toggleName, Pageable pageable) {
+        return subscriptionRepository.findConsumersByToggleName(toggleName, pageable)
+                .map(row -> new ToggleConsumerView(
+                        row.getServiceName(),
+                        row.getInstanceId(),
+                        row.getPodName(),
+                        row.getNamespace(),
+                        row.getCallbackUrl(),
+                        row.getStatus(),
+                        row.getConsumeMode()));
     }
 
     public record SubscriberView(Long clientInstanceId, String callbackUrl) {}

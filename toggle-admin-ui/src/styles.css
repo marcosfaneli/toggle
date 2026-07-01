@@ -313,6 +313,11 @@ tbody tr:last-child td {
   margin: 0 auto;
 }
 
+.form-page.full-width-page {
+  width: 100%;
+  max-width: none;
+}
+
 .form-surface {
   padding: 24px;
 }

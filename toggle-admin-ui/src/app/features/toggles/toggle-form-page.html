@@ -1,4 +1,4 @@
-<section class="form-page">
+<section class="form-page" [class.full-width-page]="mode === 'edit'">
   <div class="work-surface form-surface">
     <div class="surface-header">
       <div>
@@ -65,5 +65,61 @@
         </button>
       </div>
     </form>
+
+    <section class="subsection" *ngIf="mode === 'edit' && !loading">
+      <div class="surface-header compact-header">
+        <div>
+          <h2>Clients</h2>
+          <p>{{ consumers.length }} visible</p>
+        </div>
+      </div>
+
+      <div class="feedback-row" *ngIf="consumersError">
+        <p class="error-text">{{ consumersError }}</p>
+      </div>
+
+      <div class="table-frame">
+        <table>
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Instance</th>
+              <th>Pod</th>
+              <th>Namespace</th>
+              <th>Status</th>
+              <th>Mode</th>
+              <th>Callback</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="consumersLoading && consumers.length === 0">
+              <td colspan="7" class="empty-cell">Loading</td>
+            </tr>
+            <tr *ngIf="!consumersLoading && !consumersError && consumers.length === 0">
+              <td colspan="7" class="empty-cell">No clients</td>
+            </tr>
+            <tr *ngFor="let consumer of consumers; trackBy: trackByConsumer">
+              <td>{{ consumer.serviceName }}</td>
+              <td class="mono-cell">{{ consumer.instanceId }}</td>
+              <td>{{ consumer.podName }}</td>
+              <td>{{ consumer.namespace }}</td>
+              <td>
+                <span class="status-pill" [class.enabled]="consumer.status === 'ACTIVE'">
+                  {{ consumer.status === 'ACTIVE' ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>{{ consumer.consumeMode }}</td>
+              <td class="mono-cell">{{ consumer.callbackUrl }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <button class="secondary-action" type="button" [disabled]="consumersFirst || consumersLoading" (click)="previousConsumersPage()">Previous</button>
+        <span>Page {{ consumersPage + 1 }}</span>
+        <button class="secondary-action" type="button" [disabled]="consumersLast || consumersLoading" (click)="nextConsumersPage()">Next</button>
+      </div>
+    </section>
   </div>
 </section>
