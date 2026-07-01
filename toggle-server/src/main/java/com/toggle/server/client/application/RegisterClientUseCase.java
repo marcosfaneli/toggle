@@ -145,10 +145,18 @@ public class RegisterClientUseCase {
                             normalizedHost, schemeOrUnknown(scheme));
                 }
 
-                if (isIpLiteral(normalizedHost) && isReservedAddress(normalizedHost)) {
-                    throw rejectedCallback(serviceName, instanceId,
-                            "Callback URL points to reserved or internal network: " + host,
-                            normalizedHost, schemeOrUnknown(scheme));
+                if (isIpLiteral(normalizedHost)) {
+                    if (isReservedAddress(normalizedHost)) {
+                        throw rejectedCallback(serviceName, instanceId,
+                                "Callback URL points to reserved or internal network: " + host,
+                                normalizedHost, schemeOrUnknown(scheme));
+                    }
+                } else {
+                    if (hostnameResolvesToReservedAddress(normalizedHost)) {
+                        throw rejectedCallback(serviceName, instanceId,
+                                "Callback URL resolves to reserved or internal network: " + host,
+                                normalizedHost, schemeOrUnknown(scheme));
+                    }
                 }
             }
         } catch (URISyntaxException e) {
@@ -179,6 +187,43 @@ public class RegisterClientUseCase {
 
     private String hostOrUnknown(String host) {
         return host == null || host.isBlank() ? "unknown" : host;
+    }
+
+    private boolean hostnameResolvesToReservedAddress(String hostname) {
+        try {
+            InetAddress[] addresses = InetAddress.getAllByName(hostname);
+            for (InetAddress address : addresses) {
+                if (isReservedInetAddress(address)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (UnknownHostException e) {
+            return false;
+        }
+    }
+
+    private boolean isReservedInetAddress(InetAddress address) {
+        if (address.isAnyLocalAddress() ||
+                address.isLoopbackAddress() ||
+                address.isLinkLocalAddress() ||
+                address.isSiteLocalAddress() ||
+                address.isMulticastAddress()) {
+            return true;
+        }
+
+        byte[] bytes = address.getAddress();
+        if (bytes.length == 4) {
+            int first = bytes[0] & 0xFF;
+            int second = bytes[1] & 0xFF;
+            return first == 100 && second >= 64 && second <= 127;
+        }
+
+        if (bytes.length == 16) {
+            int first = bytes[0] & 0xFF;
+            return (first & 0xFE) == 0xFC;
+        }
+        return false;
     }
 
     private boolean isIpLiteral(String host) {
