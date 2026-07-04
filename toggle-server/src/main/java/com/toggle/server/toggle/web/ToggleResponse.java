@@ -1,8 +1,8 @@
 package com.toggle.server.toggle.web;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.toggle.server.shared.web.ToggleValueDto;
 import com.toggle.server.toggle.domain.Toggle;
+import com.toggle.server.toggle.domain.ToggleValue;
 
 import java.time.Instant;
 
@@ -14,7 +14,14 @@ public record ToggleResponse(
         boolean enabled,
         long version,
     Instant updatedAt,
-        ToggleValueDto value) {
+        ValueResponse value) {
+
+    public record ValueResponse(String type, String raw) {
+        static ValueResponse from(ToggleValue toggleValue) {
+            if (toggleValue == null) return null;
+            return new ValueResponse(toggleValue.type().name(), toggleValue.raw());
+        }
+    }
 
     public static ToggleResponse from(Toggle toggle) {
         return new ToggleResponse(
@@ -24,6 +31,6 @@ public record ToggleResponse(
                 toggle.enabled(),
                 toggle.version(),
                 toggle.updatedAt(),
-                ToggleValueDto.from(toggle.value()));
+                ValueResponse.from(toggle.value()));
     }
 }

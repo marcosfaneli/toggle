@@ -23,7 +23,7 @@ class CreateToggleCommandMapperTest {
 
     @Test
     void shouldMapRequestWithStringValue() {
-        var value = new ValueRequest("STRING", "active");
+        var value = new CreateToggleRequest.ValueRequest("STRING", "active");
         var request = new CreateToggleRequest("my-toggle", "svc", false, value);
 
         CreateToggleCommand command = mapper.toCommand(request);
@@ -35,7 +35,7 @@ class CreateToggleCommandMapperTest {
 
     @Test
     void shouldMapRequestWithNumberValue() {
-        var value = new ValueRequest("NUMBER", "42");
+        var value = new CreateToggleRequest.ValueRequest("NUMBER", "42");
         var request = new CreateToggleRequest("limit", "api-gw", true, value);
 
         CreateToggleCommand command = mapper.toCommand(request);
