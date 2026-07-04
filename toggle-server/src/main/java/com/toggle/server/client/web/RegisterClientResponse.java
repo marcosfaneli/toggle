@@ -2,8 +2,8 @@ package com.toggle.server.client.web;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.toggle.server.client.application.RegisterClientResult;
-import com.toggle.server.shared.web.ToggleValueDto;
 import com.toggle.server.toggle.domain.Toggle;
+import com.toggle.server.toggle.domain.ToggleValue;
 
 import java.time.Instant;
 import java.util.List;
@@ -17,15 +17,22 @@ public record RegisterClientResponse(
     public record ToggleEntry(
             String name,
             boolean enabled,
-            ToggleValueDto value,
+            ValueEntry value,
             long version,
             Instant updatedAt) {
+
+        public record ValueEntry(String type, String raw) {
+            static ValueEntry from(ToggleValue toggleValue) {
+                if (toggleValue == null) return null;
+                return new ValueEntry(toggleValue.type().name(), toggleValue.raw());
+            }
+        }
 
         static ToggleEntry from(Toggle toggle) {
             return new ToggleEntry(
                     toggle.name(),
                     toggle.enabled(),
-                    ToggleValueDto.from(toggle.value()),
+                    ValueEntry.from(toggle.value()),
                     toggle.version(),
                     toggle.updatedAt());
         }

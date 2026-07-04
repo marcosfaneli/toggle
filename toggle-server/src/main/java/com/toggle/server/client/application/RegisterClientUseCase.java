@@ -118,22 +118,22 @@ public class RegisterClientUseCase {
             if (scheme == null ||
                     !("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme))) {
                 throw rejectedCallback(serviceName, instanceId,
-                        "Callback URL must use http or https", valueOrUnknown(host), valueOrUnknown(scheme));
+                        "Callback URL must use http or https", hostOrUnknown(host), schemeOrUnknown(scheme));
             }
 
             if (uri.getUserInfo() != null) {
                 throw rejectedCallback(serviceName, instanceId,
-                        "Callback URL must not contain user info", valueOrUnknown(host), valueOrUnknown(scheme));
+                        "Callback URL must not contain user info", hostOrUnknown(host), schemeOrUnknown(scheme));
             }
 
             if (uri.getFragment() != null) {
                 throw rejectedCallback(serviceName, instanceId,
-                        "Callback URL must not contain fragment", valueOrUnknown(host), valueOrUnknown(scheme));
+                        "Callback URL must not contain fragment", hostOrUnknown(host), schemeOrUnknown(scheme));
             }
 
             if (host == null || host.isEmpty()) {
                 throw rejectedCallback(serviceName, instanceId,
-                        "Callback URL has no host", "n/a", valueOrUnknown(scheme));
+                        "Callback URL has no host", "n/a", schemeOrUnknown(scheme));
             }
 
             // Block internal/reserved addresses to prevent SSRF attacks (unless explicitly allowed)
@@ -142,20 +142,20 @@ public class RegisterClientUseCase {
                 if (normalizedHost.equals("localhost") || normalizedHost.endsWith(".localhost")) {
                     throw rejectedCallback(serviceName, instanceId,
                             "Callback URL points to reserved or internal network: " + host,
-                            normalizedHost, valueOrUnknown(scheme));
+                            normalizedHost, schemeOrUnknown(scheme));
                 }
 
                 if (isIpLiteral(normalizedHost)) {
                     if (isReservedAddress(normalizedHost)) {
                         throw rejectedCallback(serviceName, instanceId,
                                 "Callback URL points to reserved or internal network: " + host,
-                                normalizedHost, valueOrUnknown(scheme));
+                                normalizedHost, schemeOrUnknown(scheme));
                     }
                 } else {
                     if (hostnameResolvesToReservedAddress(normalizedHost)) {
                         throw rejectedCallback(serviceName, instanceId,
                                 "Callback URL resolves to reserved or internal network: " + host,
-                                normalizedHost, valueOrUnknown(scheme));
+                                normalizedHost, schemeOrUnknown(scheme));
                     }
                 }
             }
@@ -181,8 +181,12 @@ public class RegisterClientUseCase {
         return new InvalidCallbackUrlException(reason);
     }
 
-    private String valueOrUnknown(String value) {
-        return value == null || value.isBlank() ? "unknown" : value;
+    private String schemeOrUnknown(String scheme) {
+        return scheme == null || scheme.isBlank() ? "unknown" : scheme;
+    }
+
+    private String hostOrUnknown(String host) {
+        return host == null || host.isBlank() ? "unknown" : host;
     }
 
     private boolean hostnameResolvesToReservedAddress(String hostname) {
