@@ -31,7 +31,8 @@ class UpdateToggleUseCaseTest {
 
     @Test
     void execute_updatesAndPublishesEvent() {
-        var command = new UpdateToggleCommand("my-feature", false, new UpdateToggleCommand.ValueUpdate.Keep());
+        var command = new UpdateToggleCommand("my-feature", "order-service", false,
+                new UpdateToggleCommand.ValueUpdate.Keep());
         var updatedToggle = new Toggle("pub-id", "my-feature", "order-service", false, 2L, Instant.now(), null);
 
         when(persistenceAdapter.update(command)).thenReturn(updatedToggle);
@@ -51,7 +52,8 @@ class UpdateToggleUseCaseTest {
 
     @Test
     void execute_withValueRemoval_updatesAndPublishesEvent() {
-        var command = new UpdateToggleCommand("another-toggle", true, new UpdateToggleCommand.ValueUpdate.Remove());
+        var command = new UpdateToggleCommand("another-toggle", "svc", true,
+                new UpdateToggleCommand.ValueUpdate.Remove());
         var updatedToggle = new Toggle("pub-id-2", "another-toggle", "svc", true, 5L, Instant.now(), null);
 
         when(persistenceAdapter.update(command)).thenReturn(updatedToggle);
