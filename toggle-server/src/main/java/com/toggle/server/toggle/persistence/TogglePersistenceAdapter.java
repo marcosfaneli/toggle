@@ -73,12 +73,7 @@ public class TogglePersistenceAdapter {
         entity.setUpdatedAt(Instant.now(clock));
 
         if (command.value() != null) {
-            var valueEntity = new ToggleValueEntity();
-            valueEntity.setToggle(entity);
-            valueEntity.setValueType(command.value().type());
-            valueEntity.setValueRaw(command.value().raw());
-            valueEntity.setUpdatedAt(Instant.now(clock));
-            entity.setValue(valueEntity);
+            entity.setValue(newValueEntity(entity, command.value().type(), command.value().raw()));
         }
 
         try {
@@ -113,12 +108,7 @@ public class TogglePersistenceAdapter {
                     entity.getValue().setValueRaw(set.raw());
                     entity.getValue().setUpdatedAt(Instant.now(clock));
                 } else {
-                    var valueEntity = new ToggleValueEntity();
-                    valueEntity.setToggle(entity);
-                    valueEntity.setValueType(set.type());
-                    valueEntity.setValueRaw(set.raw());
-                    valueEntity.setUpdatedAt(Instant.now(clock));
-                    entity.setValue(valueEntity);
+                    entity.setValue(newValueEntity(entity, set.type(), set.raw()));
                 }
             }
         }
@@ -149,6 +139,15 @@ public class TogglePersistenceAdapter {
     }
 
     public record ToggleInternalId(Long id, Toggle toggle) {}
+
+    private ToggleValueEntity newValueEntity(ToggleEntity toggle, String type, String raw) {
+        var valueEntity = new ToggleValueEntity();
+        valueEntity.setToggle(toggle);
+        valueEntity.setValueType(type);
+        valueEntity.setValueRaw(raw);
+        valueEntity.setUpdatedAt(Instant.now(clock));
+        return valueEntity;
+    }
 
     private Toggle toDomain(ToggleEntity entity) {
         ToggleValue value = null;
