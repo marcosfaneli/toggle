@@ -18,6 +18,8 @@ export class ClientsPage implements OnInit {
   clients: ClientInstance[] = [];
   serviceName = '';
   selectedStatus: StatusFilter = 'ALL';
+  page = 0;
+  readonly pageSize = 20;
   loading = false;
   loaded = false;
   error = '';
@@ -41,6 +43,7 @@ export class ClientsPage implements OnInit {
     ).subscribe({
       next: clients => {
         this.clients = clients;
+        this.clampPage();
         this.loaded = true;
       },
       error: err => {
@@ -50,14 +53,62 @@ export class ClientsPage implements OnInit {
     });
   }
 
+  applyFilters(): void {
+    this.page = 0;
+    this.loadClients();
+  }
+
   resetFilters(): void {
     this.serviceName = '';
     this.selectedStatus = 'ALL';
-    this.loadClients();
+    this.applyFilters();
+  }
+
+  nextPage(): void {
+    if (!this.last) {
+      this.page += 1;
+    }
+  }
+
+  previousPage(): void {
+    if (!this.first) {
+      this.page -= 1;
+    }
+  }
+
+  get pagedClients(): ClientInstance[] {
+    const start = this.page * this.pageSize;
+    return this.clients.slice(start, start + this.pageSize);
+  }
+
+  get first(): boolean {
+    return this.page === 0;
+  }
+
+  get last(): boolean {
+    return this.page >= this.totalPages - 1;
+  }
+
+  get totalPages(): number {
+    return Math.max(Math.ceil(this.clients.length / this.pageSize), 1);
+  }
+
+  get visibleStart(): number {
+    return this.clients.length === 0 ? 0 : this.page * this.pageSize + 1;
+  }
+
+  get visibleEnd(): number {
+    return Math.min((this.page + 1) * this.pageSize, this.clients.length);
   }
 
   trackByPublicId(_: number, client: ClientInstance): string {
     return client.publicId;
+  }
+
+  private clampPage(): void {
+    if (this.page >= this.totalPages) {
+      this.page = this.totalPages - 1;
+    }
   }
 
   private errorMessage(err: unknown): string {

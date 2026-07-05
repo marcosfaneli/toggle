@@ -6,7 +6,7 @@
     </div>
   </div>
 
-  <form class="filter-bar" (ngSubmit)="loadClients()">
+  <form class="filter-bar" (ngSubmit)="applyFilters()">
     <label>
       <span>Service</span>
       <input name="serviceName" type="text" [(ngModel)]="serviceName">
@@ -51,7 +51,7 @@
         <tr *ngIf="!loading && loaded && clients.length === 0">
           <td colspan="7" class="empty-cell">No clients</td>
         </tr>
-        <tr *ngFor="let client of clients; trackBy: trackByPublicId">
+        <tr *ngFor="let client of pagedClients; trackBy: trackByPublicId">
           <td>{{ client.serviceName }}</td>
           <td class="mono-cell">{{ client.instanceId }}</td>
           <td>{{ client.podName }}</td>
@@ -72,5 +72,11 @@
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <div class="pagination" *ngIf="loaded && clients.length > 0">
+    <button class="secondary-action" type="button" [disabled]="first" (click)="previousPage()">Previous</button>
+    <span>Showing {{ visibleStart }}-{{ visibleEnd }} of {{ clients.length }} · Page {{ page + 1 }} of {{ totalPages }}</span>
+    <button class="secondary-action" type="button" [disabled]="last" (click)="nextPage()">Next</button>
   </div>
 </section>

@@ -8,13 +8,23 @@ starter.
 
 ## Run
 
-Start the toggle server first, then run:
+Start the toggle server first:
 
 ```bash
-mvn spring-boot:run
+docker compose up mysql toggle-server
+```
+
+Then, from the repository root, run:
+
+```bash
+mvn -pl toggle-client-with-lib -am spring-boot:run
 ```
 
 The application runs on `http://localhost:8083`.
+
+Running from the repository root with `-pl toggle-client-with-lib -am` makes
+Maven build the local `toggle-client-spring-boot-starter` dependency together
+with the example application.
 
 ## Try
 
