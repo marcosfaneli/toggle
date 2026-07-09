@@ -4,7 +4,7 @@
         <h1>Toggles</h1>
         <p>{{ toggles.length }} visible</p>
       </div>
-      <a class="primary-action button-link" routerLink="/toggles/new">New toggle</a>
+      <a class="primary-action button-link" routerLink="/toggles/new" *ngIf="canWrite()">New toggle</a>
     </div>
 
     <form class="filter-bar" (ngSubmit)="applyFilters()">
@@ -58,7 +58,7 @@
           </tr>
           <tr *ngFor="let toggle of toggles; trackBy: trackByName">
             <td>
-              <button class="link-button" type="button" (click)="edit(toggle)">{{ toggle.name }}</button>
+              <button class="link-button" type="button" (click)="edit(toggle)" [disabled]="!canWrite()">{{ toggle.name }}</button>
             </td>
             <td>{{ toggle.maintainer }}</td>
             <td>
@@ -70,7 +70,7 @@
             <td>{{ toggle.version }}</td>
             <td>{{ toggle.updatedAt | date:'short' }}</td>
             <td class="row-actions">
-              <button class="secondary-action compact" type="button" (click)="edit(toggle)">Edit</button>
+              <button class="secondary-action compact" type="button" (click)="edit(toggle)" *ngIf="canWrite()">Edit</button>
             </td>
           </tr>
         </tbody>
