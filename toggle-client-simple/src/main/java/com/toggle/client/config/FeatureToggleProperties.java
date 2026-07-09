@@ -17,6 +17,7 @@ public record FeatureToggleProperties(
         @NotBlank String podName,
         @NotBlank String namespace,
         @NotBlank String serverBaseUrl,
+        String apiKey,
         @NotBlank String callbackBaseUrl,
         @NotBlank String callbackPath,
         @Min(1000) long heartbeatIntervalMs,

@@ -22,6 +22,7 @@ import java.util.Optional;
 public class HttpToggleServerClient implements ToggleServerClient {
 
     private static final Logger log = LoggerFactory.getLogger(HttpToggleServerClient.class);
+    private static final String API_KEY_HEADER = "X-API-Key";
 
     private final RestClient restClient;
     private final FeatureToggleProperties properties;
@@ -56,6 +57,7 @@ public class HttpToggleServerClient implements ToggleServerClient {
         try {
             response = restClient.post()
                     .uri("/clients/register")
+                    .headers(this::addApiKeyHeader)
                     .body(request)
                     .retrieve()
                     .body(RegisterClientResponseDto.class);
@@ -91,6 +93,7 @@ public class HttpToggleServerClient implements ToggleServerClient {
         var request = new HeartbeatRequestDto(properties.serviceName(), properties.instanceId());
         restClient.post()
                 .uri("/clients/heartbeat")
+                .headers(this::addApiKeyHeader)
                 .body(request)
                 .retrieve()
                 .toBodilessEntity();
@@ -108,6 +111,7 @@ public class HttpToggleServerClient implements ToggleServerClient {
                             .path("/clients/register/{instanceId}")
                             .queryParam("serviceName", properties.serviceName())
                             .build(properties.instanceId()))
+                    .headers(this::addApiKeyHeader)
                     .retrieve()
                     .toBodilessEntity();
             registered = false;
@@ -121,8 +125,10 @@ public class HttpToggleServerClient implements ToggleServerClient {
         try {
             var response = restClient.get()
                     .uri(uriBuilder -> uriBuilder
-                            .path("/toggles/{name}")
+                            .path("/client-toggles/{name}")
+                            .queryParam("serviceName", properties.serviceName())
                             .build(toggleName))
+                    .headers(this::addApiKeyHeader)
                     .retrieve()
                     .body(ToggleResponseDto.class);
 
@@ -155,5 +161,11 @@ public class HttpToggleServerClient implements ToggleServerClient {
                 source.value() == null ? null : new ToggleValue(source.value().type(), source.value().raw()),
                 source.version(),
                 source.updatedAt() == null ? Instant.now() : source.updatedAt());
+    }
+
+    private void addApiKeyHeader(org.springframework.http.HttpHeaders headers) {
+        if (properties.apiKey() != null && !properties.apiKey().isBlank()) {
+            headers.set(API_KEY_HEADER, properties.apiKey());
+        }
     }
 }

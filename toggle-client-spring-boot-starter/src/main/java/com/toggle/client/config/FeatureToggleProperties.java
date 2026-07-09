@@ -19,6 +19,7 @@ public record FeatureToggleProperties(
         @NotBlank String podName,
         @NotBlank String namespace,
         @NotBlank String serverBaseUrl,
+        String apiKey,
         @NotBlank String callbackBaseUrl,
         @DefaultValue("/internal/feature-toggles") @NotBlank String callbackPath,
         @DefaultValue("30000") @Min(1000) long heartbeatIntervalMs,

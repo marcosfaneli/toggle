@@ -22,6 +22,7 @@ feature:
     pod-name: checkout-local-1
     namespace: local
     server-base-url: http://localhost:8080
+    api-key: ${SWITCHBOARD_API_KEY:}
     callback-base-url: http://localhost:8082
     callback-path: /internal/feature-toggles
     heartbeat-interval-ms: 5000

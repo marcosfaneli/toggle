@@ -58,6 +58,7 @@ class ToggleRuntimeServiceTest {
                 "pod-1",
                 "default",
                 "http://localhost:8080",
+                "swb_test",
                 "http://localhost:8082",
                 "/internal/feature-toggles",
                 30_000,
