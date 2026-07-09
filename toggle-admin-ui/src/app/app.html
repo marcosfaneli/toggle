@@ -5,10 +5,18 @@
       <span>Switchboard</span>
     </a>
 
-    <nav>
-      <a routerLink="/toggles" routerLinkActive="active">Toggles</a>
-      <a routerLink="/clients" routerLinkActive="active">Clients</a>
-    </nav>
+    <div class="topbar-actions">
+      <nav>
+        <a routerLink="/toggles" routerLinkActive="active">Toggles</a>
+        <a routerLink="/clients" routerLinkActive="active">Clients</a>
+        <a routerLink="/service-api-keys" routerLinkActive="active" *ngIf="auth.hasAnyRole(['ADMIN'])">API keys</a>
+      </nav>
+
+      <div class="identity" *ngIf="auth.requiresAuth()">
+        <span>{{ auth.displayName() }}</span>
+        <button class="secondary-action compact" type="button" (click)="auth.logout()">Logout</button>
+      </div>
+    </div>
   </header>
 
   <main>

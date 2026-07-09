@@ -1,0 +1,79 @@
+<section class="work-surface full-width">
+  <div class="surface-header">
+    <div>
+      <h1>Service API keys</h1>
+      <p>{{ keys.length }} keys</p>
+    </div>
+  </div>
+
+  <form class="filter-bar" (ngSubmit)="create()">
+    <label>
+      <span>Service</span>
+      <input name="serviceName" type="text" [(ngModel)]="form.serviceName">
+    </label>
+
+    <label>
+      <span>Name</span>
+      <input name="name" type="text" [(ngModel)]="form.name">
+    </label>
+
+    <div class="filter-actions">
+      <button class="primary-action" type="submit" [disabled]="creating">
+        {{ creating ? 'Creating' : 'Create key' }}
+      </button>
+    </div>
+  </form>
+
+  <div class="feedback-row" *ngIf="createdKey">
+    <p class="notice-text">
+      New key for {{ createdKey.serviceName }}: <span class="mono-inline">{{ createdKey.apiKey }}</span>
+    </p>
+  </div>
+
+  <div class="feedback-row" *ngIf="error">
+    <p class="error-text">{{ error }}</p>
+  </div>
+
+  <div class="table-frame">
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Name</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Last used</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="loading && keys.length === 0">
+          <td colspan="6" class="empty-cell">Loading</td>
+        </tr>
+        <tr *ngIf="!loading && keys.length === 0">
+          <td colspan="6" class="empty-cell">No keys</td>
+        </tr>
+        <tr *ngFor="let key of keys; trackBy: trackById">
+          <td>{{ key.serviceName }}</td>
+          <td>{{ key.name }}</td>
+          <td>
+            <span class="status-pill" [class.enabled]="key.status === 'ACTIVE'">
+              {{ key.status === 'ACTIVE' ? 'Active' : 'Revoked' }}
+            </span>
+          </td>
+          <td>{{ key.createdAt | date:'short' }}</td>
+          <td>{{ key.lastUsedAt ? (key.lastUsedAt | date:'short') : 'Never' }}</td>
+          <td class="row-actions">
+            <button
+              class="secondary-action compact"
+              type="button"
+              [disabled]="key.status !== 'ACTIVE'"
+              (click)="revoke(key)">
+              Revoke
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

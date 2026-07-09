@@ -23,6 +23,9 @@ Local development uses `proxy.conf.json`:
 /api -> http://localhost:8080
 ```
 
+By default `public/auth-config.json` sets `"mode": "none"`. Docker Compose
+mounts an OIDC config that redirects to Keycloak at `http://localhost:8089`.
+
 ## Build
 
 ```bash

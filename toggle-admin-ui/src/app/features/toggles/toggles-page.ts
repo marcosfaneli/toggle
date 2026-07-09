@@ -3,6 +3,7 @@ import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize, timeout } from 'rxjs';
+import { AuthService } from '../../core/auth.service';
 import { Toggle, ToggleApiService } from '../../core/toggle-api.service';
 
 type EnabledFilter = 'ALL' | 'ENABLED' | 'DISABLED';
@@ -17,6 +18,7 @@ export class TogglesPage implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly changeDetector = inject(ChangeDetectorRef);
+  readonly auth = inject(AuthService);
 
   toggles: Toggle[] = [];
   selectedMaintainer = '';
@@ -88,7 +90,14 @@ export class TogglesPage implements OnInit {
   }
 
   edit(toggle: Toggle): void {
+    if (!this.canWrite()) {
+      return;
+    }
     this.router.navigate(['/toggles', toggle.name, 'edit']);
+  }
+
+  canWrite(): boolean {
+    return this.auth.hasAnyRole(['ADMIN', 'MAINTAINER']);
   }
 
   valueLabel(toggle: Toggle): string {

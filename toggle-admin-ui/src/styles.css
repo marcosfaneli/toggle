@@ -284,6 +284,11 @@ tbody tr:last-child td {
   font-size: 0.84rem;
 }
 
+.mono-inline {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  overflow-wrap: anywhere;
+}
+
 .empty-cell {
   height: 96px;
   color: #66736d;
