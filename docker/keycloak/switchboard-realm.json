@@ -1,0 +1,111 @@
+{
+  "realm": "switchboard",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "switchboard-admin",
+        "description": "Switchboard administrator"
+      },
+      {
+        "name": "switchboard-maintainer",
+        "description": "Switchboard maintainer"
+      },
+      {
+        "name": "switchboard-viewer",
+        "description": "Switchboard viewer"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "switchboard-admin-ui",
+      "name": "Switchboard Admin UI",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:4200/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4200"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Switchboard",
+      "lastName": "Admin",
+      "email": "admin@switchboard.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "switchboard-admin"
+      ]
+    },
+    {
+      "username": "maintainer",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Switchboard",
+      "lastName": "Maintainer",
+      "email": "maintainer@switchboard.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "maintainer",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "switchboard-maintainer"
+      ]
+    },
+    {
+      "username": "viewer",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Switchboard",
+      "lastName": "Viewer",
+      "email": "viewer@switchboard.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "viewer",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "switchboard-viewer"
+      ]
+    }
+  ]
+}

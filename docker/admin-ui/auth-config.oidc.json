@@ -1,0 +1,8 @@
+{
+  "mode": "oidc",
+  "issuer": "http://localhost:8089/realms/switchboard",
+  "clientId": "switchboard-admin-ui",
+  "redirectUri": "http://localhost:4200/",
+  "postLogoutRedirectUri": "http://localhost:4200/",
+  "scope": "openid profile email"
+}
