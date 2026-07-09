@@ -7,6 +7,8 @@ import com.toggle.server.client.application.RegisterClientUseCase;
 import com.toggle.server.client.domain.ClientInstanceStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import com.toggle.server.serviceauth.web.ServiceIdentityVerifier;
+import org.springframework.security.core.Authentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -25,15 +27,18 @@ public class ClientController {
     private final DeregisterClientUseCase deregisterClientUseCase;
     private final ListClientsUseCase listClientsUseCase;
     private final RegisterClientCommandMapper mapper;
+    private final ServiceIdentityVerifier serviceIdentityVerifier;
 
     public ClientController(RegisterClientUseCase registerClientUseCase,
                             DeregisterClientUseCase deregisterClientUseCase,
                             ListClientsUseCase listClientsUseCase,
-                            RegisterClientCommandMapper mapper) {
+                            RegisterClientCommandMapper mapper,
+                            ServiceIdentityVerifier serviceIdentityVerifier) {
         this.registerClientUseCase = registerClientUseCase;
         this.deregisterClientUseCase = deregisterClientUseCase;
         this.listClientsUseCase = listClientsUseCase;
         this.mapper = mapper;
+        this.serviceIdentityVerifier = serviceIdentityVerifier;
     }
 
     @GetMapping
@@ -48,7 +53,8 @@ public class ClientController {
     }
 
     @PostMapping("/register")
-    public RegisterClientResponse register(@Valid @RequestBody RegisterClientRequest request) {
+    public RegisterClientResponse register(@Valid @RequestBody RegisterClientRequest request, Authentication authentication) {
+        serviceIdentityVerifier.verify(authentication, request.serviceName());
         log.info(
                 "event=client_register_requested serviceName={} instanceId={} namespace={} podName={}",
                 request.serviceName(),
@@ -61,7 +67,9 @@ public class ClientController {
     @DeleteMapping("/register/{instanceId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deregister(@PathVariable String instanceId,
-                           @RequestParam @NotBlank String serviceName) {
+                           @RequestParam @NotBlank String serviceName,
+                           Authentication authentication) {
+        serviceIdentityVerifier.verify(authentication, serviceName);
         log.info("event=client_deregister_requested serviceName={} instanceId={}", serviceName, instanceId);
         deregisterClientUseCase.execute(serviceName, instanceId);
     }

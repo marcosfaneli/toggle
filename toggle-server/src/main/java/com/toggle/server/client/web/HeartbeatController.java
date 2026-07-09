@@ -2,7 +2,9 @@ package com.toggle.server.client.web;
 
 import com.toggle.server.client.application.HeartbeatCommand;
 import com.toggle.server.client.application.HeartbeatUseCase;
+import com.toggle.server.serviceauth.web.ServiceIdentityVerifier;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,14 +21,17 @@ public class HeartbeatController {
     private static final Logger log = LoggerFactory.getLogger(HeartbeatController.class);
 
     private final HeartbeatUseCase heartbeatUseCase;
+    private final ServiceIdentityVerifier serviceIdentityVerifier;
 
-    public HeartbeatController(HeartbeatUseCase heartbeatUseCase) {
+    public HeartbeatController(HeartbeatUseCase heartbeatUseCase, ServiceIdentityVerifier serviceIdentityVerifier) {
         this.heartbeatUseCase = heartbeatUseCase;
+        this.serviceIdentityVerifier = serviceIdentityVerifier;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void heartbeat(@Valid @RequestBody HeartbeatRequest request) {
+    public void heartbeat(@Valid @RequestBody HeartbeatRequest request, Authentication authentication) {
+        serviceIdentityVerifier.verify(authentication, request.serviceName());
         log.debug(
                 "event=client_heartbeat_requested serviceName={} instanceId={}",
                 request.serviceName(),

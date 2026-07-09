@@ -69,9 +69,15 @@ docker build -t toggle-server:local .
 ## Configuration
 The main variables are defined in `src/main/resources/application.yml` and include:
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`
+- `TOGGLE_AUTH_MODE` (`none` or `oidc`)
+- `OIDC_ISSUER_URI`, `OIDC_JWK_SET_URI`, `OIDC_CLIENT_ID`
 - `toggle.api.max-page-size`
 - `toggle.heartbeat.*`
 - `toggle.delivery.timeout-ms`
+
+In `oidc` mode, human/admin endpoints require a Bearer token. Service endpoints
+use `X-API-Key`, and service keys are managed through `/service-api-keys` by
+users with the `ADMIN` role.
 
 ## Database
 Migrations are in `src/main/resources/db/migration` and use Flyway versioning

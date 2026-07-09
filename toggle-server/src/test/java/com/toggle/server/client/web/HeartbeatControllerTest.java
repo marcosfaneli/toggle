@@ -3,10 +3,12 @@ package com.toggle.server.client.web;
 import com.toggle.server.client.application.HeartbeatUseCase;
 import com.toggle.server.client.domain.ClientInstanceInactiveException;
 import com.toggle.server.client.domain.ClientInstanceNotFoundException;
+import com.toggle.server.serviceauth.web.ServiceIdentityVerifier;
 import com.toggle.server.shared.web.GlobalExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -23,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(HeartbeatController.class)
+@AutoConfigureMockMvc(addFilters = false)
 @Import(GlobalExceptionHandler.class)
 class HeartbeatControllerTest {
 
@@ -31,6 +34,9 @@ class HeartbeatControllerTest {
 
     @MockitoBean
     private HeartbeatUseCase heartbeatUseCase;
+
+    @MockitoBean
+    private ServiceIdentityVerifier serviceIdentityVerifier;
 
     private static final String VALID_BODY = """
             {

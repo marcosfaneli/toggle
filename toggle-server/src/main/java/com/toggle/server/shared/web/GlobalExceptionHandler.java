@@ -4,6 +4,7 @@ import com.toggle.server.client.domain.ClientInstanceInactiveException;
 import com.toggle.server.client.domain.ClientInstanceNotFoundException;
 import com.toggle.server.client.domain.InvalidCallbackUrlException;
 import com.toggle.server.client.domain.InvalidToggleSubscriptionException;
+import com.toggle.server.serviceauth.domain.ServiceApiKeyNotFoundException;
 import com.toggle.server.toggle.domain.ToggleAlreadyExistsException;
 import com.toggle.server.toggle.domain.ToggleNotFoundException;
 import org.springframework.http.ProblemDetail;
@@ -58,6 +59,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ToggleNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ProblemDetail handleToggleNotFound(ToggleNotFoundException exception) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(ServiceApiKeyNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ProblemDetail handleServiceApiKeyNotFound(ServiceApiKeyNotFoundException exception) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 

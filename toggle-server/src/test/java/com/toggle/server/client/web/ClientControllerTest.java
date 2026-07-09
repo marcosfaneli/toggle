@@ -14,6 +14,7 @@ import com.toggle.server.toggle.domain.ValueType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -25,6 +26,7 @@ import java.util.Objects;
 
 import com.toggle.server.client.application.ClientView;
 import com.toggle.server.client.application.ListClientsUseCase;
+import com.toggle.server.serviceauth.web.ServiceIdentityVerifier;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -38,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ClientController.class)
+@AutoConfigureMockMvc(addFilters = false)
 @Import({RegisterClientCommandMapper.class})
 class ClientControllerTest {
 
@@ -52,6 +55,9 @@ class ClientControllerTest {
 
     @MockitoBean
     private ListClientsUseCase listClientsUseCase;
+
+    @MockitoBean
+    private ServiceIdentityVerifier serviceIdentityVerifier;
 
     private static final Instant NOW = Instant.now();
 
