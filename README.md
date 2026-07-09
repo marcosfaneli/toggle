@@ -53,7 +53,12 @@ docker compose up --build
 ```
 
 The admin UI is exposed on `http://localhost:4200`, the server on
-`http://localhost:8080`, and Adminer on `http://localhost:8081`.
+`http://localhost:8080`, Keycloak on `http://localhost:8089`, and Adminer on
+`http://localhost:8081`.
+
+Docker Compose starts the server with `TOGGLE_AUTH_MODE=oidc`. The imported
+Keycloak realm is `switchboard`; local users are `admin/admin`,
+`maintainer/maintainer`, and `viewer/viewer`.
 
 The server reads the database connection from environment variables, with local defaults:
 
@@ -66,6 +71,15 @@ The server reads the database connection from environment variables, with local 
 | `DB_PASSWORD` | `toggle` |
 
 When running the server container on the same Docker Compose network as MySQL, set `DB_HOST=mysql`.
+
+Auth defaults to open local development when the server is run directly:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `TOGGLE_AUTH_MODE` | `none` | `none` or `oidc` |
+| `OIDC_ISSUER_URI` | `http://localhost:8089/realms/switchboard` | Expected JWT issuer |
+| `OIDC_JWK_SET_URI` | `http://localhost:8089/realms/switchboard/protocol/openid-connect/certs` | JWKS endpoint |
+| `OIDC_CLIENT_ID` | `switchboard-admin-ui` | Client role claim lookup |
 
 ## API
 
@@ -132,6 +146,23 @@ Content-Type: application/json
 **200 OK**
 
 Returns the updated toggle.
+
+### Service API keys
+
+When OIDC mode is active, service clients must send:
+
+```http
+X-API-Key: <service-api-key>
+```
+
+Admins can create and revoke service keys in the admin UI under `API keys`.
+The raw key is returned only once when created. Spring clients read it from:
+
+```yaml
+feature:
+  toggles:
+    api-key: ${SWITCHBOARD_API_KEY:}
+```
 
 **Errors** follow [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) (`application/problem+json`):
 

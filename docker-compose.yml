@@ -26,6 +26,18 @@ services:
       mysql:
         condition: service_healthy
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3
+    container_name: toggle-keycloak
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    ports:
+      - "8089:8080"
+    volumes:
+      - ./docker/keycloak/switchboard-realm.json:/opt/keycloak/data/import/switchboard-realm.json:ro
+
   toggle-server:
     build:
       context: ./toggle-server
@@ -37,11 +49,17 @@ services:
       DB_USERNAME: toggle
       DB_PASSWORD: toggle
       TOGGLE_SECURITY_ALLOW_LOCAL_CALLBACKS: "true"
+      TOGGLE_AUTH_MODE: oidc
+      OIDC_ISSUER_URI: http://localhost:8089/realms/switchboard
+      OIDC_JWK_SET_URI: http://keycloak:8080/realms/switchboard/protocol/openid-connect/certs
+      OIDC_CLIENT_ID: switchboard-admin-ui
     ports:
       - "8080:8080"
     depends_on:
       mysql:
         condition: service_healthy
+      keycloak:
+        condition: service_started
 
   toggle-admin-ui:
     build:
@@ -49,6 +67,8 @@ services:
     container_name: toggle-admin-ui
     ports:
       - "4200:80"
+    volumes:
+      - ./docker/admin-ui/auth-config.oidc.json:/usr/share/nginx/html/auth-config.json:ro
     depends_on:
       - toggle-server
 
