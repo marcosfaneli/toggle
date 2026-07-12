@@ -43,6 +43,9 @@ services:
       context: ./toggle-server
     container_name: toggle-server
     environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRINGDOC_API_DOCS_ENABLED: "true"
+      SPRINGDOC_SWAGGER_UI_ENABLED: "true"
       DB_HOST: mysql
       DB_PORT: "3306"
       DB_NAME: toggle_db

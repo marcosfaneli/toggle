@@ -34,9 +34,13 @@ spring:
 
 springdoc:
   api-docs:
-    enabled: false
+    enabled: ${SPRINGDOC_API_DOCS_ENABLED:false}
   swagger-ui:
-    enabled: false
+    enabled: ${SPRINGDOC_SWAGGER_UI_ENABLED:false}
+    persist-authorization: true
+    oauth:
+      client-id: ${OIDC_CLIENT_ID:switchboard-admin-ui}
+      use-pkce-with-authorization-code-grant: true
 
 server:
   port: 8080
